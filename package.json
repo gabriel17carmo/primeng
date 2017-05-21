@@ -2,13 +2,15 @@
   "name": "primeng",
   "version": "4.0.2-SNAPSHOT",
   "scripts": {
-    "tsc": "tsc",
-    "tsc:w": "tsc -w",
-    "webpack": "webpack",
-    "webpack:w": "webpack -w",
-    "webpack-dev-server": "webpack-dev-server --inline",
-    "build-prod": "webpack --config config/webpack.prod.js",
-    "build-dev": "webpack --config config/webpack.dev.js",
+      "prepublish": "npm run gulp build && npm run tsc && npm run build-prod",
+    "tsc": "node ./node_modules/typescript/bin/tsc",
+    "tsc:w": "npm run tsc -- -w",
+    "webpack": "node ./node_modules/webpack/bin/webpack.js",
+    "webpack:w": "npm run webpack -- -w",
+    "webpack-dev-server": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline",
+    "build-prod": "npm run webpack -- --config config/webpack.prod.js",
+    "build-dev": "npm run webpack -- --config config/webpack.dev.js",
+    "gulp": "node ./node_modules/gulp/bin/gulp.js",
     "start": "npm run webpack-dev-server"
   },
   "repository": {
@@ -16,6 +18,20 @@
     "url": "https://github.com/primefaces/primeng.git"
   },
   "license": "MIT",
+    "dependencies": {
+        "@angular/common": "4.0.0",
+        "@angular/compiler": "4.0.0",
+        "@angular/core": "4.0.0",
+        "@angular/forms": "4.0.0",
+        "@angular/http": "4.0.0",
+        "@angular/platform-browser": "4.0.0",
+        "@angular/platform-browser-dynamic": "4.0.0",
+        "@angular/router": "4.0.0",
+        "@angular/animations": "4.0.0",
+        "core-js": "^2.4.1",
+        "rxjs": "^5.2.0",
+        "zone.js": "^0.8.4"
+    },
   "devDependencies": {
     "@types/node": "^7.0.5",
     "del": "^2.2.0",
