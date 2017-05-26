@@ -11,7 +11,7 @@ export const TRISTATECHECKBOX_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'p-triStateCheckbox',
     template: `
-        <div class="ui-chkbox ui-tristatechkbox ui-widget">
+        <div [ngStyle]="style" [ngClass]="'ui-chkbox ui-tristatechkbox ui-widget'" [class]="styleClass">
             <div class="ui-helper-hidden-accessible">
                 <input #input type="text" [attr.id]="inputId" [name]="name" [attr.tabindex]="tabindex" readonly [disabled]="disabled" (keyup)="onKeyup($event)" (keydown)="onKeydown($event)" (focus)="onFocus()" (blur)="onBlur()">
             </div>
@@ -34,6 +34,10 @@ export class TriStateCheckbox implements ControlValueAccessor  {
     @Input() tabindex: number;
 
     @Input() inputId: string;
+
+    @Input() style: any;
+
+    @Input() styleClass: string;
     
     @Output() onChange: EventEmitter<any> = new EventEmitter();
         

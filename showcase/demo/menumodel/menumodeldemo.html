@@ -11,19 +11,19 @@
     is a sample configuration with Menu component.</p>
 
 <pre>
-<code class="language-markup" pCode>
+<code class="language-markup" pCode ngNonBindable>
 &lt;p-menu [model]="items"&gt;&lt;/p-menu&gt;
 </code>
 </pre>
 
 <pre>
-<code class="language-typescript" pCode>
+<code class="language-typescript" pCode ngNonBindable>
 import &#123;MenuModule,MenuItem&#125; from 'primeng/primeng';
 </code>
 </pre>
 
 <pre>
-<code class="language-typescript" pCode>
+<code class="language-typescript" pCode ngNonBindable>
 export class MenuDemo &#123;
     
     private items: MenuItem[];
@@ -91,6 +91,12 @@ export class MenuDemo &#123;
                     <td>RouterLink definition for internal navigation.</td>
                 </tr>
                 <tr>
+                    <td>routerLinkActiveOptions</td>
+                    <td>object</td>
+                    <td>null</td>
+                    <td>Configuration for active router link.</td>
+                </tr>
+                <tr>
                     <td>items</td>
                     <td>array</td>
                     <td>null</td>
@@ -127,7 +133,7 @@ export class MenuDemo &#123;
     <h4>Command</h4>
     <p>The function to invoke when an item is clicked is defined using the command property.</p>
 <pre>
-<code class="language-typescript" pCode>
+<code class="language-typescript" pCode ngNonBindable>
 export class MenuDemo &#123;
     
     private items: MenuItem[];
@@ -148,9 +154,10 @@ export class MenuDemo &#123;
 </pre>
 
     <h4>Navigation</h4>
-    <p>Navigation is specified using url property for external links and with routerLink for internal ones. If a menuitem has an active route, ui-state-active style class is added as an indicator.</p>
+    <p>Navigation is specified using url property for external links and with routerLink for internal ones. If a menuitem has an active route, <i>ui-state-active</i> style class is added as an indicator. Active route link can be
+    configured with routerLinkActiveOptions property of MenuItem API.</p>
 <pre>
-<code class="language-typescript" pCode>
+<code class="language-typescript" pCode ngNonBindable>
 export class MenuDemo &#123;
     
     private items: MenuItem[];
