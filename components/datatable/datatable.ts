@@ -1315,7 +1315,7 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     
     get allSelected() {
         if(this.headerCheckboxToggleAllPages) {
-            return this.selection && this.selection.length === this.value.length;
+            return this.selection && this.value && this.selection.length === this.value.length;
         }
         else {
             let val = true;
@@ -1497,6 +1497,10 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
             }
             
             return value.toString().toLowerCase() == filter.toString().toLowerCase();
+        },
+		
+        notEquals(value, filter): boolean {
+            return !this.equals(value, filter);
         },
         
         in(value, filter: any[]): boolean {
@@ -1706,7 +1710,7 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
         let columnWidth = this.resizeColumn.offsetWidth;
         let newColumnWidth = columnWidth + delta;
         let minWidth = this.resizeColumn.style.minWidth||15;
-        
+
         if(columnWidth + delta > parseInt(minWidth)) {
             if(this.columnResizeMode === 'fit') {
                 let nextColumn = this.resizeColumn.nextElementSibling;
@@ -1717,6 +1721,7 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
                     if(nextColumn) {
                         nextColumn.style.width = nextColumnWidth + 'px';
                     }
+                    
                     
                     if(this.scrollable) {
                         let colGroup = this.domHandler.findSingle(this.el.nativeElement, 'colgroup.ui-datatable-scrollable-colgroup');
@@ -1759,9 +1764,21 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     
     fixColumnWidths() {
         let columns = this.domHandler.find(this.el.nativeElement, 'th.ui-resizable-column');
+        let bodyCols;
         
-        for(let col of columns) {
-            col.style.width = col.offsetWidth + 'px';
+        for(let i = 0; i < columns.length; i++) {
+            columns[i].style.width = columns[i].offsetWidth + 'px';
+        }
+        
+        if(this.scrollable) {
+            let colGroup = this.domHandler.findSingle(this.el.nativeElement, 'colgroup.ui-datatable-scrollable-colgroup');
+            bodyCols = colGroup.children;
+            
+            if(bodyCols) {
+                for(let i = 0; i < columns.length; i++) {
+                    bodyCols[i].style.width = columns[i].offsetWidth + 'px';
+                }
+            }
         }
     }
     

@@ -52,6 +52,8 @@ export class FileUpload implements OnInit,AfterContentInit {
     
     @Input() url: string;
     
+    @Input() method: string = 'POST';
+    
     @Input() multiple: boolean;
     
     @Input() accept: string;
@@ -93,6 +95,8 @@ export class FileUpload implements OnInit,AfterContentInit {
     @Output() onError: EventEmitter<any> = new EventEmitter();
     
     @Output() onClear: EventEmitter<any> = new EventEmitter();
+
+    @Output() onRemove: EventEmitter<any> = new EventEmitter();
     
     @Output() onSelect: EventEmitter<any> = new EventEmitter();
     
@@ -196,7 +200,7 @@ export class FileUpload implements OnInit,AfterContentInit {
         let acceptableTypes = this.accept.split(',');
         for(let type of acceptableTypes) {
             let acceptable = this.isWildcard(type) ? this.getTypeClass(file.type) === this.getTypeClass(type) 
-                                                    : this.getFileExtension(file) === type;
+                                                    : file.type == type || this.getFileExtension(file) === type;
 
             if(acceptable) {
                 return true;
@@ -259,7 +263,7 @@ export class FileUpload implements OnInit,AfterContentInit {
             }
         };
         
-        xhr.open('POST', this.url, true);
+        xhr.open(this.method, this.url, true);
 		
 		this.onBeforeSend.emit({
 			'xhr': xhr,
@@ -277,6 +281,7 @@ export class FileUpload implements OnInit,AfterContentInit {
     }
     
     remove(index: number) {
+        this.onRemove.emit({originalEvent: event, file: this.files[index]});
         this.files.splice(index, 1);
     }
     
