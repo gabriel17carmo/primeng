@@ -1,4 +1,4 @@
-import {NgModule,Component,Input,Output,OnInit,AfterViewInit,OnDestroy,EventEmitter,Renderer,ElementRef} from '@angular/core';
+import {NgModule,Component,Input,Output,OnInit,AfterViewInit,OnDestroy,EventEmitter,Renderer2,ElementRef,ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
 
@@ -49,16 +49,17 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
     
     target: any;
 
-    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer) {}
+    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef) {}
 
     ngOnInit() {
         if(this.dismissable) {
-            this.documentClickListener = this.renderer.listenGlobal('document', 'click', () => {
+            this.documentClickListener = this.renderer.listen('document', 'click', () => {
                 if(!this.selfClick&&!this.targetEvent) {
                     this.hide();
                 }
                 this.selfClick = false;
                 this.targetEvent = false;
+                this.cd.markForCheck();
             });
         }
     }

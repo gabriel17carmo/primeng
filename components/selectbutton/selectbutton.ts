@@ -90,7 +90,7 @@ export class SelectButton implements ControlValueAccessor {
         });
     }
     
-    onFocus() {
+    onFocus(event: Event) {
         this.focusedItem = <HTMLInputElement>event.target;
     }
     

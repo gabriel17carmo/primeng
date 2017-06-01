@@ -1,6 +1,6 @@
 {
   "name": "primeng",
-  "version": "4.0.2-SNAPSHOT",
+  "version": "4.0.4-SNAPSHOT",
   "scripts": {
       "prepublish": "npm run gulp build && npm run tsc && npm run build-prod",
     "tsc": "node ./node_modules/typescript/bin/tsc",
@@ -33,6 +33,18 @@
         "zone.js": "^0.8.4"
     },
   "devDependencies": {
+    "@angular/common": "^4.0.0",
+    "@angular/compiler": "^4.0.0",
+    "@angular/core": "^4.0.0",
+    "@angular/forms": "^4.0.0",
+    "@angular/http": "^4.0.0",
+    "@angular/platform-browser": "^4.0.0",
+    "@angular/platform-browser-dynamic": "^4.0.0",
+    "@angular/router": "^4.0.0",
+    "@angular/animations": "^4.0.0",
+    "core-js": "^2.4.1",
+    "rxjs": "^5.2.0",
+    "zone.js": "^0.8.4",
     "@types/node": "^7.0.5",
     "del": "^2.2.0",
     "gulp": "^3.9.1",

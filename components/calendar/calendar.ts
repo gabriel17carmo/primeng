@@ -1,4 +1,4 @@
-import {NgModule,Component,ElementRef,AfterViewInit,AfterViewChecked,OnDestroy,OnInit,Input,Output,SimpleChange,EventEmitter,forwardRef,Renderer,ViewChild,ChangeDetectorRef} from '@angular/core';
+import {NgModule,Component,ElementRef,AfterViewInit,AfterViewChecked,OnDestroy,OnInit,Input,Output,SimpleChange,EventEmitter,forwardRef,Renderer2,ViewChild,ChangeDetectorRef} from '@angular/core';
 import {trigger,state,style,transition,animate} from '@angular/animations';
 import {CommonModule} from '@angular/common';
 import {ButtonModule} from '../button/button';
@@ -31,7 +31,7 @@ export interface LocaleSettings {
     template:  `
         <span [ngClass]="{'ui-calendar':true,'ui-calendar-w-btn':showIcon}" [ngStyle]="style" [class]="styleClass">
             <ng-template [ngIf]="!inline">
-                <input #inputfield type="text" [attr.id]="inputId" [attr.required]="required" [value]="inputFieldValue" (focus)="onInputFocus(inputfield, $event)" (keydown)="onInputKeydown($event)" (click)="closeOverlay=false" (blur)="onInputBlur($event)"
+                <input #inputfield type="text" [attr.id]="inputId" [attr.required]="required" [value]="inputFieldValue" (focus)="onInputFocus($event)" (keydown)="onInputKeydown($event)" (click)="closeOverlay=false" (blur)="onInputBlur($event)"
                     [readonly]="readonlyInput" (input)="onUserInput($event)" [ngStyle]="inputStyle" [class]="inputStyleClass" [placeholder]="placeholder||''" [disabled]="disabled" [attr.tabindex]="tabindex"
                     [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all'"
                     ><button type="button" [icon]="icon" pButton *ngIf="showIcon" (click)="onButtonClick($event,inputfield)"
@@ -330,7 +330,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
        this.createMonth(this.currentMonth, this.currentYear);
     }
 
-    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer, public cd: ChangeDetectorRef) {}
+    constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, public cd: ChangeDetectorRef) {}
 
     ngOnInit() {
         let date = this.defaultDate||new Date();        
@@ -491,8 +491,12 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         }
         
         if(dateMeta.otherMonth) {
-            if(this.selectOtherMonths)
+			if(this.selectOtherMonths) {
+                this.currentMonth = dateMeta.month;
+                this.currentYear = dateMeta.year;
+                this.createMonth(this.currentMonth, this.currentYear);
                 this.selectDate(dateMeta);
+            }
         }
         else {
              this.selectDate(dateMeta);
@@ -692,15 +696,15 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         return false;
     }
     
-    onInputFocus(inputfield, event) {
+    onInputFocus(event: Event) {
         this.focus = true;
         if(this.showOnFocus) {
-            this.showOverlay(inputfield);
+            this.showOverlay();
         }
         this.onFocus.emit(event);
     }
     
-    onInputBlur(event) {
+    onInputBlur(event: Event) {
         this.focus = false;
         this.onBlur.emit(event);
         this.updateInputfield();
@@ -712,7 +716,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         
         if(!this.overlay.offsetParent) {
             inputfield.focus();
-            this.showOverlay(inputfield);
+            this.showOverlay();
         }
         else
             this.closeOverlay = true;
@@ -893,7 +897,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         this.closeOverlay = this.dateClick;
     }
     
-    showOverlay(inputfield) {
+    showOverlay() {
         this.overlayVisible = true;
         this.overlayShown = true;
         this.overlay.style.zIndex = String(++DomHandler.zindex);
@@ -1239,7 +1243,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     bindDocumentClickListener() {
         if(!this.documentClickListener) {
-            this.documentClickListener = this.renderer.listenGlobal('document', 'click', () => {
+            this.documentClickListener = this.renderer.listen('document', 'click', () => {
                 if(this.closeOverlay) {
                     this.overlayVisible = false;
                 }
@@ -1254,6 +1258,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     unbindDocumentClickListener() {
         if(this.documentClickListener) {
             this.documentClickListener();
+            this.documentClickListener = null;
         }
     }
         
