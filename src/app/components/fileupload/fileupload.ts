@@ -12,12 +12,12 @@ import {PrimeTemplate,SharedModule} from '../common/shared';
     template: `
         <div [ngClass]="'ui-fileupload ui-widget'" [ngStyle]="style" [class]="styleClass">
             <div class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
-                <button type="button" [label]="chooseLabel" icon="fa-plus" pButton class="ui-fileupload-choose" (click)="onChooseClick($event, fileinput)" [disabled]="disabled"> 
+                <button [ngClass]="btnClass" type="button" [label]="chooseLabel" icon="fa-plus" pButton class="ui-fileupload-choose" (click)="onChooseClick($event, fileinput)" [disabled]="disabled"> 
                     <input #fileinput type="file" (change)="onFileSelect($event)" [multiple]="multiple" [accept]="accept" [disabled]="disabled">
                 </button>
 
-                <button *ngIf="!auto" type="button" [label]="uploadLabel" icon="fa-upload" pButton (click)="upload()" [disabled]="!hasFiles()"></button>
-                <button *ngIf="!auto" type="button" [label]="cancelLabel" icon="fa-close" pButton (click)="clear()" [disabled]="!hasFiles()"></button>
+                <button *ngIf="!auto" [ngClass]="btnClass" type="button" [label]="uploadLabel" icon="fa-upload" pButton (click)="upload()" [disabled]="!hasFiles()"></button>
+                <button *ngIf="!auto" [ngClass]="btnClass" type="button" [label]="cancelLabel" icon="fa-close" pButton (click)="clear()" [disabled]="!hasFiles()"></button>
             
                 <p-templateLoader [template]="toolbarTemplate"></p-templateLoader>
             </div>
@@ -77,6 +77,8 @@ export class FileUpload implements OnInit,AfterContentInit {
     @Input() style: string;
     
     @Input() styleClass: string;
+    
+    @Input() btnClass: string;
     
     @Input() previewWidth: number = 50;
     
