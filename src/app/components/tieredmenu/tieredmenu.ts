@@ -1,4 +1,4 @@
-import {NgModule,Component,ElementRef,AfterViewInit,OnDestroy,Input,Output,Renderer2,EventEmitter} from '@angular/core';
+import {NgModule,Component,ElementRef,AfterViewInit,OnDestroy,Input,Output,Renderer2} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomHandler} from '../dom/domhandler';
 import {MenuItem} from '../common/menuitem';
@@ -10,7 +10,8 @@ import {RouterModule} from '@angular/router';
         <ul [ngClass]="{'ui-helper-reset':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}" class="ui-menu-list"
             (click)="listClick($event)">
             <ng-template ngFor let-child [ngForOf]="(root ? item : item.items)">
-                <li #listItem [ngClass]="{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem}"
+                <li *ngIf="child.separator" class="ui-menu-separator ui-widget-content">
+                <li *ngIf="!child.separator" #listItem [ngClass]="{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem}"
                     (mouseenter)="onItemMouseEnter($event, listItem, child)" (mouseleave)="onItemMouseLeave($event)">
                     <a *ngIf="!child.routerLink" [href]="child.url||'#'" class="ui-menuitem-link ui-corner-all" [attr.target]="child.target"
                         [ngClass]="{'ui-state-disabled':child.disabled}" (click)="itemClick($event, child)">
@@ -71,13 +72,8 @@ export class TieredMenuSub {
             event.preventDefault();
         }
         
-        if(item.command) {
-            if(!item.eventEmitter) {
-                item.eventEmitter = new EventEmitter();
-                item.eventEmitter.subscribe(item.command);
-            }
-            
-            item.eventEmitter.emit({
+        if(item.command) {            
+            item.command({
                 originalEvent: event,
                 item: item
             });
@@ -109,6 +105,8 @@ export class TieredMenu implements AfterViewInit,OnDestroy {
 
     @Input() styleClass: string;
     
+    @Input() appendTo: any;
+    
     container: any;
     
     documentClickListener: any;
@@ -121,6 +119,13 @@ export class TieredMenu implements AfterViewInit,OnDestroy {
         this.container = this.el.nativeElement.children[0];
         
         if(this.popup) {
+            if(this.appendTo) {
+                if(this.appendTo === 'body')
+                    document.body.appendChild(this.container);
+                else
+                    this.domHandler.appendChild(this.container, this.appendTo);
+            }
+            
             this.documentClickListener = this.renderer.listen('document', 'click', () => {
                 if(!this.preventDocumentDefault) {
                     this.hide();
@@ -148,26 +153,12 @@ export class TieredMenu implements AfterViewInit,OnDestroy {
         this.container.style.display = 'none';
     }
 
-    unsubscribe(item: any) {
-        if(item.eventEmitter) {
-            item.eventEmitter.unsubscribe();
-        }
-        
-        if(item.items) {
-            for(let childItem of item.items) {
-                this.unsubscribe(childItem);
-            }
-        }
-    }
-        
     ngOnDestroy() {
         if(this.popup && this.documentClickListener) {
             this.documentClickListener();
-        }
-        
-        if(this.model) {
-            for(let item of this.model) {
-                this.unsubscribe(item);
+            
+            if(this.appendTo) {
+                this.el.nativeElement.appendChild(this.container);
             }
         }
     }

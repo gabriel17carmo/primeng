@@ -15,8 +15,9 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     template: `
         <div [ngStyle]="style" [class]="styleClass" [ngClass]="{'ui-colorpicker ui-widget':true,'ui-colorpicker-overlay':!inline,'ui-colorpicker-dragging':colorDragging||hueDragging}">
             <input #input type="text" *ngIf="!inline" class="ui-colorpicker-preview ui-inputtext ui-state-default ui-corner-all" readonly="readonly" [ngClass]="{'ui-state-disabled': disabled}"
-                (focus)="onInputFocus()" (click)="onInputClick()" (keydown)="onInputKeydown($event)" [attr.id]="inputId" [attr.tabindex]="tabindex" [disabled]="disabled">
-            <div #panel [ngClass]="{'ui-colorpicker-panel ui-corner-all': true, 'ui-colorpicker-overlay-panel ui-shadow':!inline, 'ui-state-disabled': disabled}" (click)="onPanelClick($event)"
+                (focus)="onInputFocus()" (click)="onInputClick()" (keydown)="onInputKeydown($event)" [attr.id]="inputId" [attr.tabindex]="tabindex" [disabled]="disabled"
+                [style.backgroundColor]="inputBgColor">
+            <div #panel [ngClass]="{'ui-colorpicker-panel ui-corner-all': true, 'ui-colorpicker-overlay-panel ui-shadow':!inline, 'ui-state-disabled': disabled}" (click)="onPanelClick()"
                 [@panelState]="inline ? 'visible' : (panelVisible ? 'visible' : 'hidden')" [style.display]="inline ? 'block' : (panelVisible ? 'block' : 'none')">
                 <div class="ui-colorpicker-content">
                     <div #colorSelector class="ui-colorpicker-color-selector" (mousedown)="onColorMousedown($event)">
@@ -78,6 +79,8 @@ export class ColorPicker implements ControlValueAccessor, AfterViewChecked, OnDe
     @ViewChild('input') inputViewChild: ElementRef;
     
     value: any;
+    
+    inputBgColor: string;
     
     shown: boolean;
     
@@ -164,23 +167,30 @@ export class ColorPicker implements ControlValueAccessor, AfterViewChecked, OnDe
         
         this.updateUI();
         this.updateModel();
-        this.onChange.emit({originalEvent: event, value: this.value});
+        this.onChange.emit({originalEvent: event, value: this.getValueToUpdate()});
     }
     
-    updateModel(): void {
+    getValueToUpdate() {
+        let val: any;
         switch(this.format) {
             case 'hex':
-                this.onModelChange(this.HSBtoHEX(this.value));
+                val = '#' + this.HSBtoHEX(this.value);
             break;
             
             case 'rgb':
-                this.onModelChange(this.HSBtoRGB(this.value));
+                val = this.HSBtoRGB(this.value);
             break;
             
             case 'hsb':
-                this.onModelChange(this.value);
+                val = this.value;
             break;
         }
+        
+        return val;
+    }
+    
+    updateModel(): void {
+        this.onModelChange(this.getValueToUpdate());
     }
 
     writeValue(value: any): void {
@@ -215,10 +225,7 @@ export class ColorPicker implements ControlValueAccessor, AfterViewChecked, OnDe
         this.colorHandleViewChild.nativeElement.style.left =  Math.floor(150 * this.value.s / 100) + 'px';
         this.colorHandleViewChild.nativeElement.style.top =  Math.floor(150 * (100 - this.value.b) / 100) + 'px';
         this.hueHandleViewChild.nativeElement.style.top = Math.floor(150 - (150 * this.value.h / 360)) + 'px';
-        
-        if(this.inputViewChild && this.inputViewChild.nativeElement) {
-            this.inputViewChild.nativeElement.style.backgroundColor = '#' + this.HSBtoHEX(this.value);
-        }
+        this.inputBgColor = '#' + this.HSBtoHEX(this.value);
     }
     
     onInputFocus() {

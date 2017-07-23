@@ -10,14 +10,14 @@ import {PrimeTemplate,SharedModule} from '../common/shared';
 @Component({
     selector: 'p-fileUpload',
     template: `
-        <div [ngClass]="'ui-fileupload ui-widget'" [ngStyle]="style" [class]="styleClass">
+        <div [ngClass]="'ui-fileupload ui-widget'" [ngStyle]="style" [class]="styleClass" *ngIf="mode === 'advanced'">
             <div class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
-                <button [ngClass]="btnClass" type="button" [label]="chooseLabel" icon="fa-plus" pButton class="ui-fileupload-choose" (click)="onChooseClick($event, fileinput)" [disabled]="disabled"> 
-                    <input #fileinput type="file" (change)="onFileSelect($event)" [multiple]="multiple" [accept]="accept" [disabled]="disabled">
-                </button>
+                <span class="ui-fileupload-choose" [ngClass]="btnClass" [label]="chooseLabel" icon="fa-plus" pButton  [ngClass]="{'ui-fileupload-choose-selected': hasFiles(),'ui-state-focus': focus}" [attr.disabled]="disabled" > 
+                    <input #fileinput type="file" (change)="onFileSelect($event)" [multiple]="multiple" [accept]="accept" [disabled]="disabled" (focus)="onFocus()" (blur)="onBlur()">
+                </span>
 
-                <button *ngIf="!auto" [ngClass]="btnClass" type="button" [label]="uploadLabel" icon="fa-upload" pButton (click)="upload()" [disabled]="!hasFiles()"></button>
-                <button *ngIf="!auto" [ngClass]="btnClass" type="button" [label]="cancelLabel" icon="fa-close" pButton (click)="clear()" [disabled]="!hasFiles()"></button>
+                <button *ngIf="!auto&&showUploadButton" [ngClass]="btnClass" type="button" [label]="uploadLabel" icon="fa-upload" pButton (click)="upload()" [disabled]="!hasFiles()"></button>
+                <button *ngIf="!auto&&showCancelButton" [ngClass]="btnClass" type="button" [label]="cancelLabel" icon="fa-close" pButton (click)="clear()" [disabled]="!hasFiles()"></button>
             
                 <p-templateLoader [template]="toolbarTemplate"></p-templateLoader>
             </div>
@@ -33,17 +33,24 @@ import {PrimeTemplate,SharedModule} from '../common/shared';
                             <div><img [src]="file.objectURL" *ngIf="isImage(file)" [width]="previewWidth" /></div>
                             <div>{{file.name}}</div>
                             <div>{{formatSize(file.size)}}</div>
-                            <div><button type="button" icon="fa-close" pButton (click)="remove(i)"></button></div>
+                            <div><button type="button" icon="fa-close" pButton (click)="remove($event,i)"></button></div>
                         </div>
                     </div>
                     <div *ngIf="fileTemplate">
                         <ng-template ngFor [ngForOf]="files" [ngForTemplate]="fileTemplate"></ng-template>
                     </div>
                 </div>
-                
                 <p-templateLoader [template]="contentTemplate"></p-templateLoader>
             </div>
         </div>
+        <span class="ui-button ui-fileupload-choose ui-widget ui-state-default ui-corner-all ui-button-text-icon-left" *ngIf="mode === 'basic'" 
+        (mouseup)="onSimpleUploaderClick($event)"
+        [ngClass]="{'ui-fileupload-choose-selected': hasFiles(),'ui-state-focus': focus}">
+            <span class="ui-button-icon-left fa" [ngClass]="{'fa-plus': !hasFiles()||auto, 'fa-upload': hasFiles()&&!auto}"></span>
+            <span class="ui-button-text ui-clickable">{{auto ? chooseLabel : hasFiles() ? files[0].name : chooseLabel}}</span>
+            <input type="file" [accept]="accept" [multiple]="multiple" [disabled]="disabled"
+                (change)="onFileSelect($event)" *ngIf="!hasFiles()" (focus)="onFocus()" (blur)="onBlur()">
+        </span>
     `
 })
 export class FileUpload implements OnInit,AfterContentInit {
@@ -87,6 +94,14 @@ export class FileUpload implements OnInit,AfterContentInit {
     @Input() uploadLabel: string = 'Upload';
     
     @Input() cancelLabel: string = 'Cancel';
+    
+    @Input() showUploadButton: boolean = true;
+    
+    @Input() showCancelButton: boolean = true;
+    
+    @Input() mode: string = 'advanced';
+    
+    @Input() customUpload: boolean;
 
     @Output() onBeforeUpload: EventEmitter<any> = new EventEmitter();
 	
@@ -102,6 +117,10 @@ export class FileUpload implements OnInit,AfterContentInit {
     
     @Output() onSelect: EventEmitter<any> = new EventEmitter();
     
+    @Output() onProgress: EventEmitter<any> = new EventEmitter();
+    
+    @Output() uploadHandler: EventEmitter<any> = new EventEmitter();
+    
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
      
     public files: File[];
@@ -116,7 +135,9 @@ export class FileUpload implements OnInit,AfterContentInit {
     
     public contentTemplate: TemplateRef<any>; 
     
-    public toolbarTemplate: TemplateRef<any>; 
+    public toolbarTemplate: TemplateRef<any>;
+    
+    focus: boolean;
         
     constructor(private sanitizer: DomSanitizer){}
     
@@ -145,12 +166,7 @@ export class FileUpload implements OnInit,AfterContentInit {
             }
         });
     }
-    
-    onChooseClick(event, fileInput) {
-        fileInput.value = null;
-        fileInput.click();
-    }
-    
+        
     onFileSelect(event) {
         this.msgs = [];
         if(!this.multiple) {
@@ -175,7 +191,7 @@ export class FileUpload implements OnInit,AfterContentInit {
             this.upload();
         }
     }
-    
+        
     validate(file: File): boolean {
         if(this.accept && !this.isFileTypeValid(file)) {
             this.msgs.push({
@@ -233,48 +249,57 @@ export class FileUpload implements OnInit,AfterContentInit {
     }
 
     upload() {
-        this.msgs = [];
-        let xhr = new XMLHttpRequest(),
-        formData = new FormData();
-
-		this.onBeforeUpload.emit({
-            'xhr': xhr,
-            'formData': formData 
-        });
-
-        for(let i = 0; i < this.files.length; i++) {
-            formData.append(this.name, this.files[i], this.files[i].name);
+        if(this.customUpload) {
+            this.uploadHandler.emit({
+                files: this.files
+            });
         }
+        else {
+            this.msgs = [];
+            let xhr = new XMLHttpRequest(),
+            formData = new FormData();
 
-        xhr.upload.addEventListener('progress', (e: ProgressEvent) => {
-            if(e.lengthComputable) {
-              this.progress = Math.round((e.loaded * 100) / e.total);
+            this.onBeforeUpload.emit({
+                'xhr': xhr,
+                'formData': formData 
+            });
+
+            for(let i = 0; i < this.files.length; i++) {
+                formData.append(this.name, this.files[i], this.files[i].name);
             }
-          }, false);
 
-        xhr.onreadystatechange = () => {
-            if(xhr.readyState == 4) {
-                this.progress = 0;
+            xhr.upload.addEventListener('progress', (e: ProgressEvent) => {
+                if(e.lengthComputable) {
+                  this.progress = Math.round((e.loaded * 100) / e.total);
+                }
                 
-                if(xhr.status >= 200 && xhr.status < 300)
-                    this.onUpload.emit({xhr: xhr, files: this.files});
-                else
-                    this.onError.emit({xhr: xhr, files: this.files});
-                
-                this.clear();
-            }
-        };
-        
-        xhr.open(this.method, this.url, true);
-		
-		this.onBeforeSend.emit({
-			'xhr': xhr,
-            'formData': formData 
-		});
+                this.onProgress.emit({originalEvent: e, progress: this.progress});
+              }, false);
 
-        xhr.withCredentials = this.withCredentials;
-        
-        xhr.send(formData);
+            xhr.onreadystatechange = () => {
+                if(xhr.readyState == 4) {
+                    this.progress = 0;
+                    
+                    if(xhr.status >= 200 && xhr.status < 300)
+                        this.onUpload.emit({xhr: xhr, files: this.files});
+                    else
+                        this.onError.emit({xhr: xhr, files: this.files});
+                    
+                    this.clear();
+                }
+            };
+            
+            xhr.open(this.method, this.url, true);
+            
+            this.onBeforeSend.emit({
+                'xhr': xhr,
+                'formData': formData 
+            });
+
+            xhr.withCredentials = this.withCredentials;
+            
+            xhr.send(formData);
+        }
     }
 
     clear() {
@@ -282,7 +307,7 @@ export class FileUpload implements OnInit,AfterContentInit {
         this.onClear.emit();
     }
     
-    remove(index: number) {
+    remove(event: Event, index: number) {
         this.onRemove.emit({originalEvent: event, file: this.files[index]});
         this.files.splice(index, 1);
     }
@@ -306,20 +331,33 @@ export class FileUpload implements OnInit,AfterContentInit {
         }
     }
     
-    onDragLeave(e) {
+    onDragLeave(event) {
         if(!this.disabled) {
             this.dragHighlight = false;
         }
     }
     
-    onDrop(e) {
+    onDrop(event) {
         if(!this.disabled) {
             this.dragHighlight = false;
-            e.stopPropagation();
-            e.preventDefault();
+            event.stopPropagation();
+            event.preventDefault();
             
-            this.onFileSelect(e);
+            let files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
+            let allowDrop = this.multiple||(files && files.length === 1);
+            
+            if(allowDrop) {
+                this.onFileSelect(event);
+            }
         }
+    }
+    
+    onFocus() {
+        this.focus = true;
+    }
+    
+    onBlur() {
+        this.focus = false;
     }
     
     formatSize(bytes) {
@@ -332,6 +370,12 @@ export class FileUpload implements OnInit,AfterContentInit {
         i = Math.floor(Math.log(bytes) / Math.log(k));
         
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+    
+    onSimpleUploaderClick(event: Event) {
+        if(this.hasFiles()) {
+            this.upload();
+        }
     }
 }
 
