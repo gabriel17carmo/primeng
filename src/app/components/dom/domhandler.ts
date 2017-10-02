@@ -76,7 +76,7 @@ export class DomHandler {
         let windowScrollTop = this.getWindowScrollTop();
         let viewport = this.getViewport();
         let top, left;
-        
+
         if ((targetOffset.top + targetHeight + elementDimensions.height) > viewport.height) {
             top = -1 * (elementDimensions.height);
             if(targetOffset.top + top < 0) {
@@ -86,8 +86,8 @@ export class DomHandler {
         else {
             top = targetHeight;
         }
-            
-            
+
+
         if ((targetOffset.left + elementDimensions.width) > viewport.width)
             left = targetWidth - elementDimensions.width;
         else
@@ -114,7 +114,7 @@ export class DomHandler {
             if(top < 0) {
                 top = 0 + windowScrollTop;
             }
-        } 
+        }
         else {
             top = targetOuterHeight + targetOffset.top + windowScrollTop;
         }
@@ -123,6 +123,13 @@ export class DomHandler {
             left = targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth;
         else
             left = targetOffset.left + windowScrollLeft;
+
+        if (left < 0) {
+          left = 0;
+        }
+        if (top < 0) {
+          top = 0;
+        }
 
         element.style.top = top + 'px';
         element.style.left = left + 'px';
@@ -211,7 +218,7 @@ export class DomHandler {
                 opacity = 0;
                 clearInterval(fading);
             }
-            
+
             element.style.opacity = opacity;
         }, interval);
     }
@@ -270,7 +277,7 @@ export class DomHandler {
         width -= parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
         return width;
     }
-    
+
     public getInnerHeight(el) {
         let height = el.offsetHeight;
         let style = getComputedStyle(el);
@@ -318,10 +325,10 @@ export class DomHandler {
 
         return { width: w, height: h };
     }
-    
+
     public getOffset(el) {
         let rect = el.getBoundingClientRect();
-        
+
         return {
             top: rect.top + document.body.scrollTop,
             left: rect.left + document.body.scrollLeft
@@ -357,7 +364,7 @@ export class DomHandler {
         // other browser
         return false;
     }
-    
+
     appendChild(element: any, target: any) {
         if(this.isElement(target))
             target.appendChild(element);
@@ -366,7 +373,7 @@ export class DomHandler {
         else
             throw 'Cannot append ' + target + ' to ' + element;
     }
-    
+
     removeChild(element: any, target: any) {
         if(this.isElement(target))
             target.removeChild(element);
@@ -375,17 +382,17 @@ export class DomHandler {
         else
             throw 'Cannot remove ' + element + ' from ' + target;
     }
-    
+
     isElement(obj: any) {
         return (typeof HTMLElement === "object" ? obj instanceof HTMLElement :
             obj && typeof obj === "object" && obj !== null && obj.nodeType === 1 && typeof obj.nodeName === "string"
         );
     }
-    
+
     calculateScrollbarWidth(): number {
         if(this.calculatedScrollbarWidth !== null)
             return this.calculatedScrollbarWidth;
-        
+
         let scrollDiv = document.createElement("div");
         scrollDiv.className = "ui-scrollbar-measure";
         document.body.appendChild(scrollDiv);
@@ -394,14 +401,14 @@ export class DomHandler {
         document.body.removeChild(scrollDiv);
 
         this.calculatedScrollbarWidth = scrollbarWidth;
-        
+
         return scrollbarWidth;
     }
-    
+
     public invokeElementMethod(element: any, methodName: string, args?: any[]): void {
         (element as any)[methodName].apply(element, args);
     }
-    
+
     public clearSelection(): void {
         if(window.getSelection) {
             if(window.getSelection().empty) {
