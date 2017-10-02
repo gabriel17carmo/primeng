@@ -93,6 +93,13 @@ export class DomHandler {
         else
             left = 0;
 
+        if (left < 0) {
+          left = 0;
+        }
+        if (top < 0) {
+          top = 0;
+        }
+
         element.style.top = top + 'px';
         element.style.left = left + 'px';
     }
