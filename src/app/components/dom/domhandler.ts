@@ -93,13 +93,6 @@ export class DomHandler {
         else
             left = 0;
 
-        if (left < 0) {
-          left = 0;
-        }
-        if (top < 0) {
-          top = 0;
-        }
-
         element.style.top = top + 'px';
         element.style.left = left + 'px';
     }
@@ -119,7 +112,7 @@ export class DomHandler {
         if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
             top = targetOffset.top + windowScrollTop - elementOuterHeight;
             if(top < 0) {
-                top = 0 + windowScrollTop;
+                top = windowScrollTop;
             }
         }
         else {
@@ -132,10 +125,7 @@ export class DomHandler {
             left = targetOffset.left + windowScrollLeft;
 
         if (left < 0) {
-          left = 0;
-        }
-        if (top < 0) {
-          top = 0;
+          left = windowScrollLeft;
         }
 
         element.style.top = top + 'px';

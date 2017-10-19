@@ -26,8 +26,10 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
     @Input() style: any;
 
     @Input() styleClass: string;
-    
+
     @Input() appendTo: any;
+
+    @Input() attachParentScroll: boolean;
 
     @Output() onBeforeShow: EventEmitter<any> = new EventEmitter();
 
@@ -36,24 +38,24 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
     @Output() onBeforeHide: EventEmitter<any> = new EventEmitter();
 
     @Output() onAfterHide: EventEmitter<any> = new EventEmitter();
-    
+
     container: any;
 
     visible: boolean = false;
 
-    documentClickListener: any;
-    
+    eventListeners =  [];
+
     selfClick: boolean;
-    
+
     targetEvent: boolean;
-    
+
     target: any;
 
     constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef) {}
 
     ngOnInit() {
         if(this.dismissable) {
-            this.documentClickListener = this.renderer.listen('document', 'click', () => {
+            this.eventListeners[0] = this.renderer.listen('document', 'click', () => {
                 if(!this.selfClick&&!this.targetEvent) {
                     this.hide();
                 }
@@ -62,10 +64,18 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
                 this.cd.markForCheck();
             });
         }
+
+        if (this.attachParentScroll) {
+          this.eventListeners[1] = this.renderer.listen(this.el.nativeElement.offsetParent, 'scroll', (event) => {
+            if (this.container && this.target && this.visible) {
+              this.domHandler.absolutePosition(this.container, this.target);
+            }
+          }
+        }
     }
-    
-    ngAfterViewInit() {  
-        this.container = this.el.nativeElement.children[0]; 
+
+    ngAfterViewInit() {
+        this.container = this.el.nativeElement.children[0];
         if(this.appendTo) {
             if(this.appendTo === 'body')
                 document.body.appendChild(this.container);
@@ -73,10 +83,10 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
                 this.domHandler.appendChild(this.container, this.appendTo);
         }
     }
-    
+
     toggle(event,target?) {
         let currentTarget = (target||event.currentTarget||event.target);
-                                
+
         if(!this.target||this.target == currentTarget) {
             if(this.visible)
                 this.hide();
@@ -86,7 +96,7 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
         else {
             this.show(event, target);
         }
-        
+
         if(this.dismissable) {
             this.targetEvent = true;
         }
@@ -98,7 +108,7 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
         if(this.dismissable) {
             this.targetEvent = true;
         }
-        
+
         this.onBeforeShow.emit(null);
         let elementTarget = target||event.currentTarget||event.target;
         this.container.style.zIndex = ++DomHandler.zindex;
@@ -121,7 +131,7 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
             this.onAfterHide.emit(null);
         }
     }
-        
+
     onPanelClick() {
         if(this.dismissable) {
             this.selfClick = true;
@@ -130,23 +140,21 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
 
     onCloseClick(event) {
         this.hide();
-        
+
         if(this.dismissable) {
             this.selfClick = true;
         }
-        
+
         event.preventDefault();
     }
 
     ngOnDestroy() {
-        if(this.documentClickListener) {
-            this.documentClickListener();
-        }
-        
+        this.eventListeners.forEach(d => d());
+
         if(this.appendTo) {
             this.el.nativeElement.appendChild(this.container);
         }
-        
+
         this.target = null;
     }
 }
