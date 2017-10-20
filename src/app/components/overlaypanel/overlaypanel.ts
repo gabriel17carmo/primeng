@@ -70,7 +70,7 @@ export class OverlayPanel implements OnInit,AfterViewInit,OnDestroy {
             if (this.container && this.target && this.visible) {
               this.domHandler.absolutePosition(this.container, this.target);
             }
-          }
+          });
         }
     }
 
