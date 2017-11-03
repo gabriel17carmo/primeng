@@ -59,22 +59,22 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
     eventListeners =  [];
 
     selfClick: boolean;
-        
+
     target: any;
-    
+
     willHide: boolean;
-    
+
     willShow: boolean;
-    
+
     targetClickEvent: boolean;
-    
+
     closeClick: boolean;
-    
+
     constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2, private cd: ChangeDetectorRef) {}
-    
+
     ngAfterViewInit() {
         this.container = this.el.nativeElement.children[0];
-        
+
         if(this.appendTo) {
             if(this.appendTo === 'body')
                 document.body.appendChild(this.container);
@@ -82,7 +82,7 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
                 this.domHandler.appendChild(this.container, this.appendTo);
         }
     }
-    
+
     ngAfterViewChecked() {
         if(this.willShow) {
             this.domHandler.absolutePosition(this.container, this.target);
@@ -90,20 +90,20 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
             this.onAfterShow.emit(null);
             this.willShow = false;
         }
-        
+
         if(this.willHide) {
             this.onAfterHide.emit(null);
             this.willHide = false;
         }
     }
-    
+
     bindDocumentClickListener() {
         if(!this.eventListeners[0] && this.dismissable) {
             this.eventListeners[0] = this.renderer.listen('document', 'click', () => {
                 if(!this.selfClick && !this.targetClickEvent) {
                     this.hide();
                 }
-                
+
                 this.selfClick = false;
                 this.targetClickEvent = false;
                 this.cd.markForCheck();
@@ -118,15 +118,17 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
           });
         }
     }
-    
+
     unbindDocumentClickListener() {
         for (let i = 0; i < this.eventListeners.length; i++) {
-          this.eventListeners[i]();
-          this.eventListeners[i] = null;
+          if (this.eventListeners[i]) {
+            this.eventListeners[i]();
+            this.eventListeners[i] = null;
+          }
         }
     }
-    
-    toggle(event, target?) {                          
+
+    toggle(event, target?) {
         if(!this.target || this.target === (target||event.currentTarget||event.target)) {
             if(this.visible)
                 this.hide();
@@ -145,7 +147,7 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
 
         this.visible = true;
         this.willShow = true;
-        
+
         if(event.type === 'click') {
             this.targetClickEvent = true;
         }
@@ -161,7 +163,7 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
             this.unbindDocumentClickListener();
         }
     }
-        
+
     onPanelClick(event) {
         if(this.closeClick) {
             this.hide();
@@ -179,7 +181,7 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
 
     ngOnDestroy() {
         this.unbindDocumentClickListener();
-        
+
         if(this.appendTo) {
             this.el.nativeElement.appendChild(this.container);
         }
