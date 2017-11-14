@@ -92,9 +92,13 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     @Input() name: string;
 
     @Input() cache: boolean = true;
-        
+
+    @Input() hasContent: boolean = true;
+
+    @Output() onTabPanelClick = new EventEmitter<Event>();
+
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
-        
+
     constructor(public viewContainer: ViewContainerRef) {}
 
     closed: boolean;
@@ -104,11 +108,11 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     _selected: boolean;
 
     loaded: boolean;
-    
+
     id: string = `ui-tabpanel-${idx++}`;
-    
+
     contentTemplate: TemplateRef<any>;
-    
+
     ngAfterContentInit() {
         this.templates.forEach((item) => {
             switch(item.getType()) {
@@ -134,6 +138,10 @@ export class TabPanel implements AfterContentInit,OnDestroy {
 
     ngOnDestroy() {
         this.view = null;
+    }
+
+    emitOnClickEvent(clickEvent: Event) {
+      this.onTabPanelClick.emit(clickEvent);
     }
 }
 
@@ -210,11 +218,13 @@ export class TabView implements AfterContentInit,BlockableUI {
     }
 
     open(event: Event, tab: TabPanel) {
-        if(tab.disabled) {
-            if(event) {
-                event.preventDefault();
+      tab.emitOnClickEvent(event);
+
+      if(tab.disabled || !tab.hasContent) {
+          if(event) {
+              event.preventDefault();
             }
-            return;
+          return;
         }
 
         if(!tab.selected) {
