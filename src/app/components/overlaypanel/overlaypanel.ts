@@ -42,7 +42,9 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
 
     @Input() appendTo: any;
 
-    @Input() attachParentScroll: boolean;
+    @Input() attachScroll: boolean;
+
+    @Input() scrollElement: any;
 
     @Output() onBeforeShow: EventEmitter<any> = new EventEmitter();
 
@@ -110,8 +112,19 @@ export class OverlayPanel implements AfterViewInit,AfterViewChecked,OnDestroy {
             });
         }
 
-        if (this.attachParentScroll) {
-          this.eventListeners[1] = this.renderer.listen(this.el.nativeElement.offsetParent, 'scroll', (event) => {
+        if (this.attachScroll) {
+          let scrollElement;
+          if (this.scrollElement != null && typeof this.scrollElement === 'string') {
+            scrollElement = document.querySelector(this.scrollElement);
+
+          } else if (this.scrollElement != null && this.scrollElement instanceof Element) {
+            scrollElement = this.scrollElement;
+
+          } else {
+            scrollElement = this.el.nativeElement.offsetParent;
+          }
+
+          this.eventListeners[1] = this.renderer.listen(scrollElement, 'scroll', (event) => {
             if (this.container && this.target && this.visible) {
               this.domHandler.absolutePosition(this.container, this.target);
             }
