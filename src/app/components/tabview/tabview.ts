@@ -95,13 +95,13 @@ export class TabPanel implements AfterContentInit,OnDestroy {
 
     @Input() hasContent: boolean = true;
 
+    @Input() closed = false;
+
     @Output() onTabPanelClick = new EventEmitter<Event>();
 
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
 
     constructor(public viewContainer: ViewContainerRef) {}
-
-    closed: boolean;
 
     view: EmbeddedViewRef<any>;
 
