@@ -33,6 +33,10 @@
     padding-right: 1.5em;
 }
 
+.ui-dropdown-item-placeholder {
+  color: #aaa;
+}
+
 .ui-dropdown-item-empty,
 .ui-dropdown-label-empty {
     text-indent: -9999px;   

@@ -46,6 +46,9 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
                 </div>
                 <div #itemswrapper class="ui-dropdown-items-wrapper" [style.max-height]="scrollHeight||'auto'">
                     <ul class="ui-dropdown-items ui-dropdown-list ui-widget-content ui-widget ui-corner-all ui-helper-reset" *ngIf="lazy ? panelVisible : true">
+                        <li *ngIf="placeholder && !required" class="ui-dropdown-item-placeholder" [ngClass]="{'ui-dropdown-item ui-corner-all':true}" (click)="onItemClick($event)">
+                          {{placeholder}}
+                        </li>
                         <li *ngFor="let option of optionsToDisplay;let i=index"
                             [ngClass]="{'ui-dropdown-item ui-corner-all':true, 'ui-state-highlight':(selectedOption == option),
                             'ui-dropdown-item-empty':!option.label||option.label.length === 0}"
@@ -270,7 +273,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
     selectItem(event, option) {
         if(this.selectedOption != option) {
             this.selectedOption = option;
-            this.value = option.value;
+            this.value = option != null ? option.value : null;
 
             this.onModelChange(this.value);
             this.updateEditableLabel();
