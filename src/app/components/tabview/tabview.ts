@@ -133,7 +133,9 @@ export class TabPanel implements AfterContentInit,OnDestroy {
 
     set selected(val: boolean) {
         this._selected = val;
-        this.loaded = true;
+        if (val) {
+          this.loaded = true;
+        }
     }
 
     ngOnDestroy() {
