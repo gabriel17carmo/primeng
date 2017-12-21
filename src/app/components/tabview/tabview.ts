@@ -1,5 +1,5 @@
 import {NgModule,Component,ElementRef,OnDestroy,Input,Output,EventEmitter,HostListener,AfterContentInit,
-        ContentChildren,ContentChild,QueryList,TemplateRef,EmbeddedViewRef,ViewContainerRef} from '@angular/core';
+        ContentChildren,ContentChild,QueryList,TemplateRef,EmbeddedViewRef,ViewContainerRef,ChangeDetectorRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {SharedModule,PrimeTemplate} from '../common/shared';
 import {BlockableUI} from '../common/blockableui';
@@ -101,7 +101,7 @@ export class TabPanel implements AfterContentInit,OnDestroy {
 
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
 
-    constructor(public viewContainer: ViewContainerRef) {}
+    constructor(public viewContainer: ViewContainerRef, private changeDetector: ChangeDetectorRef) {}
 
     view: EmbeddedViewRef<any>;
 
@@ -132,9 +132,13 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     }
 
     set selected(val: boolean) {
+        let oldVal = this._selected;
         this._selected = val;
         if (val) {
           this.loaded = true;
+        }
+        if (oldVal !== val) {
+          this.changeDetector.detectChanges();
         }
     }
 
