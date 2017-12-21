@@ -155,6 +155,8 @@ export class TabPanel implements AfterContentInit,OnDestroy {
     selector: 'p-tabView',
     template: `
         <div [ngClass]="'ui-tabview ui-widget ui-widget-content ui-corner-all ui-tabview-' + orientation" [ngStyle]="style" [class]="styleClass">
+            <div class="ui-tabview-left-blur"></div>
+            <div class="ui-tabview-right-blur"></div>
             <ul p-tabViewNav role="tablist" *ngIf="orientation!='bottom'" [tabs]="tabs" [orientation]="orientation" 
                 (onTabClick)="open($event.originalEvent, $event.tab)" (onTabCloseClick)="close($event.originalEvent, $event.tab)"></ul>
         <div class="ui-tabview-panels">
