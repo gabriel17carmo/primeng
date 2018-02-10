@@ -3,11 +3,11 @@
         <a href="#" class="menu-button" (click)="onMenuButtonClick($event)">
             <i class="fa fa-bars"></i>
         </a>
-        
+
         <a href="#" class="logo" [routerLink]="['/']">
             <img alt="logo" src="assets/showcase/images/logo.png" />
         </a>
-        
+
         <ul class="topbar-menu">
             <li>
                 <a href="#" [routerLink]="['/setup']">GET STARTED</a>
@@ -18,6 +18,7 @@
                     <li class="topbar-submenu-header">THEMING</li>
                     <li><a [routerLink]="['./theming']">Guide</a></li>
                     <li class="topbar-submenu-header">PREMIUM</li>
+                    <li><a href="http://www.primefaces.org/layouts/apollo-ng"><img src="assets/showcase/images/themeswitcher-apollo.png" alt="Apollo"><span class="ui-text">Apollo</span></a></li>
                     <li><a href="http://www.primefaces.org/layouts/serenity-ng"><img src="assets/showcase/images/themeswitcher-serenity.png" alt="Serenity (Material)"><span class="ui-text">Serenity</span></a></li>
                     <li><a href="http://www.primefaces.org/layouts/avalon-ng"><img src="assets/showcase/images/themeswitcher-avalon.png" alt="Avalon (Bootstrap)"><span class="ui-text">Avalon</span></a></li>
                     <li><a href="http://www.primefaces.org/layouts/ultima-ng"><img src="assets/showcase/images/themeswitcher-ultima.png" alt="Ultima (Material)"><span class="ui-text">Ultima</span></a></li>
@@ -53,7 +54,7 @@
             </li>
         </ul>
     </div>
-    
+
     <div id="layout-sidebar" [ngClass]="{'active': menuActive}">
         <div class="layout-menu">
             <a id="menu_input" #inputmenutitle [class.active-menuitem]="inputmenutitle.id == activeMenuId" (click)="activeMenuId = (activeMenuId === inputmenutitle.id ? null : inputmenutitle.id)">
@@ -70,7 +71,7 @@
                 <a [routerLink]="['/colorpicker']" (click)="menuActive = false">&#9679; ColorPicker</a>
                 <a [routerLink]="['/dropdown']" (click)="menuActive = false">&#9679; Dropdown</a>
                 <a [routerLink]="['/editor']" (click)="menuActive = false">&#9679; Editor</a>
-                <a [routerLink]="['/keyfilter']" (click)="menuActive = false">&#9679; KeyFilter</a>
+                <a [routerLink]="['/keyfilter']" (click)="menuActive = false">&#9679; KeyFilter <span class="menuitem-badge">NEW</span></a>
                 <a [routerLink]="['/inputswitch']" (click)="menuActive = false">&#9679; InputSwitch</a>
                 <a [routerLink]="['/inputtext']" (click)="menuActive = false">&#9679; InputText</a>
                 <a [routerLink]="['/inputtextarea']" (click)="menuActive = false">&#9679; InputTextArea</a>
@@ -114,6 +115,7 @@
                 <a [routerLink]="['/paginator']" (click)="menuActive = false">&#9679; Paginator</a>
                 <a [routerLink]="['/picklist']" (click)="menuActive = false">&#9679; PickList</a>
                 <a [routerLink]="['/schedule']" (click)="menuActive = false">&#9679; Schedule</a>
+                <a [routerLink]="['/table']" (click)="menuActive = false">&#9679; Table <span class="menuitem-badge">NEW</span></a>
                 <a [routerLink]="['/tree']" (click)="menuActive = false">&#9679; Tree</a>
                 <a [routerLink]="['/treetable']" (click)="menuActive = false">&#9679; TreeTable</a>
             </div>
@@ -125,9 +127,10 @@
             </a>
             <div [ngClass]="{'submenushow': (panelmenutitle.id == activeMenuId), 'submenuhide': (panelmenutitle.id != activeMenuId)}">
                 <a [routerLink]="['/accordion']" (click)="menuActive = false">&#9679; Accordion</a>
+                <a [routerLink]="['/card']" (click)="menuActive = false">&#9679; Card <span class="menuitem-badge">NEW</span></a>
                 <a [routerLink]="['/fieldset']" (click)="menuActive = false">&#9679; Fieldset</a>
                 <a [routerLink]="['/panel']" (click)="menuActive = false">&#9679; Panel</a>
-                <a [routerLink]="['/scrollpanel']" (click)="menuActive = false">&#9679; ScrollPanel</a>
+                <a [routerLink]="['/scrollpanel']" (click)="menuActive = false">&#9679; ScrollPanel <span class="menuitem-badge">NEW</span></a>
                 <a [routerLink]="['/grid']" (click)="menuActive = false">&#9679; Grid</a>
                 <a [routerLink]="['/tabview']" (click)="menuActive = false">&#9679; TabView</a>
                 <a [routerLink]="['/toolbar']" (click)="menuActive = false">&#9679; Toolbar</a>
@@ -146,7 +149,7 @@
                 <a [routerLink]="['/overlaypanel']" (click)="menuActive = false">&#9679; OverlayPanel</a>
                 <a [routerLink]="['/tooltip']" (click)="menuActive = false">&#9679; Tooltip</a>
             </div>
-            
+
             <a id="menu_file" #filemenutitle [class.active-menuitem]="filemenutitle.id == activeMenuId" (click)="activeMenuId = (activeMenuId === filemenutitle.id ? null : filemenutitle.id)">
                 <img src="assets/showcase/images/icons/file-active.svg" class="layout-menu-icon-active"/>
                 <img src="assets/showcase/images/icons/file.svg" class="layout-menu-icon-inactive"/>
@@ -209,7 +212,7 @@
             <div [ngClass]="{'submenushow': (multimediamenutitle.id == activeMenuId), 'submenuhide': (multimediamenutitle.id != activeMenuId)}">
                 <a [routerLink]="['/galleria']" (click)="menuActive = false">&#9679; Galleria</a>
             </div>
-            
+
             <a id="menu_dnd" #dndmenutitle [class.active-menuitem]="dndmenutitle.id == activeMenuId"
                     (click)="activeMenuId = (activeMenuId === dndmenutitle.id ? null : dndmenutitle.id)">
                     <img src="assets/showcase/images/icons/dragdrop-active.svg" class="layout-menu-icon-active"/>
@@ -219,7 +222,7 @@
             <div [ngClass]="{'submenushow': (dndmenutitle.id == activeMenuId), 'submenuhide': (dndmenutitle.id != activeMenuId)}">
                 <a [routerLink]="['/dragdrop']" (click)="menuActive = false">&#9679; Drag&amp;Drop</a>
             </div>
-            
+
             <a id="menu_misc" #misctitle [class.active-menuitem]="misctitle.id == activeMenuId"
                     (click)="activeMenuId = (activeMenuId === misctitle.id ? null : misctitle.id)">
                     <img src="assets/showcase/images/icons/misc-active.svg" class="layout-menu-icon-active"/>
@@ -241,7 +244,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="layout-mask" *ngIf="menuActive">
     </div>
 
@@ -251,7 +254,7 @@
         </div>
 
         <div class="content-section layout-footer clearfix">
-            <span><a href="http://www.primetek.com.tr">PrimeTek</a>, Copyright &copy; 2017</span>
+            <span><a href="http://www.primetek.com.tr">PrimeTek</a>, Copyright &copy; 2018</span>
             <div class="footer-links">
                 <a href="https://github.com/primefaces/primeng"><i class="fa fa-github"></i></a>
                 <a href="https://twitter.com/prime_ng"><i class="fa fa-twitter"></i></a>

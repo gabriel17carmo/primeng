@@ -18,29 +18,20 @@ npm install primeng --save
     <p>PrimeNG is distributed in commonjs format, a module manager of your choice is required and this guide provides samples for SystemJS, WebPack and Angular CLI.</p>
 
     <h3>Import</h3>
-    <p>UI components are configured as modules, once PrimeNG is downloaded and configured, modules and apis can be imported from 'primeng/primeng' shorthand in your application code.</p>
+    <p>UI components are configured as modules, once PrimeNG is downloaded and configured, modules and apis can be imported from 'primeng/*' shorthand in your application code. Documentation
+        of each component states the import path.
+    </p>
 <pre>
 <code class="language-typescript" pCode ngNonBindable>
-import &#123;AccordionModule&#125; from 'primeng/primeng';     //accordion and accordion tab
-import &#123;MenuItem&#125; from 'primeng/primeng';            //api
-</code>
-</pre>
-
-    <p>Importing from primeng/primeng will load all other components as well, to only import a specific component pattern would result in a smaller bundle size.</p>
-<pre>
-<code class="language-typescript" pCode ngNonBindable>
-//import &#123;ComponentModule&#125; from 'primeng/components/componentname/componentname';
-//import &#123;InterfaceName&#125; from 'primeng/common/api';
-
-import &#123;AccordionModule&#125; from 'primeng/components/accordion/accordion';
-import &#123;MenuItem&#125; from 'primeng/components/common/api';
+import &#123;AccordionModule&#125; from 'primeng/accordion';     //accordion and accordion tab
+import &#123;MenuItem&#125; from 'primeng/api';                 //api
 </code>
 </pre>
 
     <h3>Dependencies</h3>
     <p>Majority of PrimeNG components (95%) are native and there are some exceptions having 3rd party dependencies. In addition, components require font-awesome for icons.</p>
 
-    <p>The css dependencies are as follows, note that font-awesome should be loaded before PrimeNG css and theme can be changed with your choice.</p>
+    <p>The css dependencies are as follows, font awesome, theme of your choice and structural css of components.</p>
 <pre>
 <code class="language-html" pCode ngNonBindable>
 &lt;link rel="stylesheet" type="text/css" href="YOUR_PATH/font-awesome.min.css" /&gt;
@@ -48,7 +39,7 @@ import &#123;MenuItem&#125; from 'primeng/components/common/api';
 &lt;link rel="stylesheet" type="text/css" href="/node_modules/primeng/resources/primeng.min.css" /&gt;
 </code>
 </pre>
-
+    
     <p>Here is the list of components with 3rd party dependencies.</p>
 
     <div class="doc-tablewrapper">
@@ -74,7 +65,7 @@ import &#123;MenuItem&#125; from 'primeng/components/common/api';
                 </tr>
                 <tr>
                     <td>Charts</td>
-                    <td>Charts.js 2.1.x</td>
+                    <td>Charts.js 2.7.x</td>
                 </tr>
                 <tr>
                     <td>Captcha</td>

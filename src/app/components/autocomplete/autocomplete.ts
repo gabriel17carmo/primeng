@@ -19,13 +19,13 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
         <span [ngClass]="{'ui-autocomplete ui-widget':true,'ui-autocomplete-dd':dropdown,'ui-autocomplete-multiple':multiple}" [ngStyle]="style" [class]="styleClass">
             <input *ngIf="!multiple" #in [attr.type]="type" [attr.id]="inputId" [ngStyle]="inputStyle" [class]="inputStyleClass" autocomplete="off" [attr.required]="required"
             [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all ui-autocomplete-input'" [value]="inputFieldValue"
-            (click)="onInputClick($event)" (input)="onInput($event)" (keydown)="onKeydown($event)" (keyup)="onKeyup($event)" (focus)="onInputFocus($event)" (blur)="onInputBlur($event)"
+            (click)="onInputClick($event)" (input)="onInput($event)" (keydown)="onKeydown($event)" (keyup)="onKeyup($event)" (focus)="onInputFocus($event)" (blur)="onInputBlur($event)" (change)="onInputChange($event)"
             [attr.placeholder]="placeholder" [attr.size]="size" [attr.maxlength]="maxlength" [attr.tabindex]="tabindex" [readonly]="readonly" [disabled]="disabled"
             ><ul *ngIf="multiple" #multiContainer class="ui-autocomplete-multiple-container ui-widget ui-inputtext ui-state-default ui-corner-all" [ngClass]="{'ui-state-disabled':disabled,'ui-state-focus':focus}" (click)="multiIn.focus()">
                 <li #token *ngFor="let val of value" class="ui-autocomplete-token ui-state-highlight ui-corner-all">
                     <span class="ui-autocomplete-token-icon fa fa-fw fa-close" (click)="removeItem(token)" *ngIf="!disabled"></span>
-                    <span *ngIf="!selectedItemTemplate" class="ui-autocomplete-token-label">{{field ? val[field] : val}}</span>
-                    <ng-template *ngIf="selectedItemTemplate" [pTemplateWrapper]="selectedItemTemplate" [item]="val"></ng-template>
+                    <span *ngIf="!selectedItemTemplate" class="ui-autocomplete-token-label">{{field ? objectUtils.resolveFieldData(val, field): val}}</span>
+                    <ng-container *ngTemplateOutlet="selectedItemTemplate; context: {$implicit: val}"></ng-container>
                 </li>
                 <li class="ui-autocomplete-input-token">
                     <input #multiIn [attr.type]="type" [attr.id]="inputId" [disabled]="disabled" [attr.placeholder]="(value&&value.length ? null : placeholder)" [attr.tabindex]="tabindex" (input)="onInput($event)"  (click)="onInputClick($event)"
@@ -38,8 +38,8 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
                 <ul class="ui-autocomplete-items ui-autocomplete-list ui-widget-content ui-widget ui-corner-all ui-helper-reset" *ngIf="panelVisible">
                     <li *ngFor="let option of suggestions; let idx = index" [ngClass]="{'ui-autocomplete-list-item ui-corner-all':true,'ui-state-highlight':(highlightOption==option)}"
                         (mouseenter)="highlightOption=option" (mouseleave)="highlightOption=null" (click)="selectItem(option)">
-                        <span *ngIf="!itemTemplate">{{field ? option[field] : option}}</span>
-                        <ng-template *ngIf="itemTemplate" [pTemplateWrapper]="itemTemplate" [item]="option" [index]="idx"></ng-template>
+                        <span *ngIf="!itemTemplate">{{field ? objectUtils.resolveFieldData(option, field) : option}}</span>
+                        <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: option, index: idx}"></ng-container>
                     </li>
                     <li *ngIf="noResults && emptyMessage" class="ui-autocomplete-list-item ui-corner-all">{{emptyMessage}}</li>
                 </ul>
@@ -299,7 +299,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         }
 
         let value = (<HTMLInputElement> event.target).value;
-        if(!this.multiple) {
+        if(!this.multiple && !this.forceSelection) {
             this.onModelChange(value);
         }
         
@@ -358,6 +358,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         
         this.onSelect.emit(option);
         this.updateFilledState();
+        this._suggestions = null;
         
         if(focus) {
             this.focusInput();
@@ -417,8 +418,8 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         let itemIndex = this.domHandler.index(item);
         let removedValue = this.value[itemIndex];
         this.value = this.value.filter((val, i) => i!=itemIndex);
-        this.onUnselect.emit(removedValue);
         this.onModelChange(this.value);
+        this.onUnselect.emit(removedValue);
     }
         
     onKeydown(event) {
@@ -513,7 +514,9 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
         this.focus = false;
         this.onModelTouched();
         this.onBlur.emit(event);
-        
+    }
+
+    onInputChange(event) {
         if(this.forceSelection && this.suggestions) {
             let valid = false;
             let inputValue = event.target.value.trim();
@@ -521,7 +524,7 @@ export class AutoComplete implements AfterViewInit,AfterViewChecked,DoCheck,Cont
             if(this.suggestions)  {
                 for(let suggestion of this.suggestions) {
                     let itemValue = this.field ? this.objectUtils.resolveFieldData(suggestion, this.field) : suggestion;
-                    if(itemValue && inputValue === itemValue) {
+                    if(itemValue && inputValue === itemValue.trim()) {
                         valid = true;
                         this.selectItem(suggestion, false);
                         break;

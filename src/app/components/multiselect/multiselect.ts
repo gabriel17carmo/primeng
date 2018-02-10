@@ -39,8 +39,7 @@ export const MULTISELECT_VALUE_ACCESSOR: any = {
                         </div>
                     </div>
                     <div class="ui-multiselect-filter-container" *ngIf="filter">
-                        <input #filterInput type="text" role="textbox" (input)="onFilter($event)"
-                                    class="ui-inputtext ui-widget ui-state-default ui-corner-all">
+                        <input #filterInput type="text" role="textbox" (input)="onFilter($event)" class="ui-inputtext ui-widget ui-state-default ui-corner-all" [attr.placeholder]="filterPlaceHolder">
                         <span class="fa fa-fw fa-search"></span>
                     </div>
                     <a class="ui-multiselect-close ui-corner-all" href="#" (click)="close($event)">
@@ -76,7 +75,7 @@ export const MULTISELECT_VALUE_ACCESSOR: any = {
                                 </div>
                             </div>
                             <label *ngIf="!itemTemplate">{{option.label}}</label>
-                            <ng-template [pTemplateWrapper]="itemTemplate" [item]="option" [index]="i" *ngIf="itemTemplate"></ng-template>
+                            <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: option, index: i}"></ng-container>
                         </li>
                       </ng-template>
                     </ul>
@@ -84,6 +83,10 @@ export const MULTISELECT_VALUE_ACCESSOR: any = {
             </div>
         </div>
     `,
+    host: {
+        '[class.ui-inputwrapper-filled]': 'filled',
+        '[class.ui-inputwrapper-focus]': 'focus'
+    },
     providers: [DomHandler,ObjectUtils,MULTISELECT_VALUE_ACCESSOR]
 })
 export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterViewChecked,OnDestroy,ControlValueAccessor {
@@ -106,6 +109,8 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
 
     @Input() filter: boolean = true;
 
+    @Input() filterPlaceHolder: string;
+    
     @Input() overlayVisible: boolean;
 
     @Input() tabindex: number;
@@ -158,6 +163,8 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
 
     public focus: boolean;
 
+    filled: boolean;
+    
     public documentClickListener: any;
 
     public container: HTMLDivElement;
@@ -240,9 +247,14 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
     writeValue(value: any) : void {
         this.value = value;
         this.updateLabel();
+        this.updateFilledState();
         this.cd.markForCheck();
     }
 
+    updateFilledState() {
+        this.filled = (this.valuesAsString != null && this.valuesAsString.length > 0);
+    }
+    
     registerOnChange(fn: Function): void {
         this.onModelChange = fn;
     }
@@ -263,10 +275,11 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
             this.value = [...this.value||[],value];
 
         this.onModelChange(this.value);
-        this.onChange.emit({originalEvent: event, value: this.value});
+        this.onChange.emit({originalEvent: event, value: this.value, itemValue: value});
         this.updateLabel();
-    }
-
+        this.updateFilledState();
+    }   
+    
     isSelected(value) {
         return this.findSelectionIndex(value) != -1;
     }
