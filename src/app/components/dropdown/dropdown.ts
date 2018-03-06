@@ -56,7 +56,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
                 </div>
                 <div #itemswrapper class="ui-dropdown-items-wrapper" [style.max-height]="scrollHeight||'auto'">
                     <ul class="ui-dropdown-items ui-dropdown-list ui-widget-content ui-widget ui-corner-all ui-helper-reset" *ngIf="lazy ? panelVisible : true">
-                        <li *ngIf="placeholder && !required" class="ui-dropdown-item-placeholder" [ngClass]="{'ui-dropdown-item ui-corner-all':true}" (click)="onItemClick($event)">
+                        <li *ngIf="placeholder && !required && optionsToDisplay.length > 0" class="ui-dropdown-item-placeholder" [ngClass]="{'ui-dropdown-item ui-corner-all':true}" (click)="onItemClick($event)">
                           {{placeholder}}
                         </li>
                         <ng-container *ngIf="group">
@@ -78,7 +78,7 @@ export const DROPDOWN_VALUE_ACCESSOR: any = {
                                 <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: option}"></ng-container>
                             </li>
                         </ng-template>
-                        <li *ngIf="filter && optionsToDisplay && optionsToDisplay.length === 0">{{emptyFilterMessage}}</li>
+                        <li *ngIf="filter && optionsToDisplay && optionsToDisplay.length === 0" class="empty-message">{{emptyFilterMessage}}</li>
                     </ul>
                 </div>
             </div>
