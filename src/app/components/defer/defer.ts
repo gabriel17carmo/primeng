@@ -11,11 +11,13 @@ import {DomHandler} from '../dom/domhandler';
 })
 export class DeferredLoader implements AfterViewInit,OnDestroy {
         
+    @Input() pDeferOnlyEvent = false;
     @Output() onLoad: EventEmitter<any> = new EventEmitter();
     
     @ContentChild(TemplateRef) template: TemplateRef<any>;
         
     documentScrollListener: Function;
+    scrollContainer: any;
     
     view: EmbeddedViewRef<any>;
             
@@ -25,8 +27,8 @@ export class DeferredLoader implements AfterViewInit,OnDestroy {
         if(this.shouldLoad()) {
             this.load();
         }
-        
-        this.documentScrollListener = this.renderer.listen('window', 'scroll', () => {
+        this.scrollContainer = this.getScrollParent(this.el.nativeElement);
+        this.documentScrollListener = this.renderer.listen(this.scrollContainer, 'scroll', () => {
             if(this.shouldLoad()) {
                 this.load();
                 this.documentScrollListener();
@@ -34,18 +36,52 @@ export class DeferredLoader implements AfterViewInit,OnDestroy {
             }
         });
     }
+
+    getScrollParent(node) {
+        if (node == null) {
+          return null;
+        }
+      
+        if (node.scrollHeight > node.clientHeight) {
+          return node;
+        } else {
+          return this.getScrollParent(node.parentNode);
+        }
+      }
     
     shouldLoad(): boolean {
-        let rect = this.el.nativeElement.getBoundingClientRect();
-        let docElement = document.documentElement;
-        let scrollTop = (window.pageYOffset||document.documentElement.scrollTop);
-        let winHeight = docElement.clientHeight;
+        // let rect = this.el.nativeElement.getBoundingClientRect();
+        // let docElement = document.documentElement;
+        // let scrollTop = (window.pageYOffset||document.documentElement.scrollTop);
+        // let winHeight = docElement.clientHeight;
         
-        return (winHeight >= rect.top);
+        // return (winHeight >= rect.top);
+        let element = this.el.nativeElement;
+        let container = this.scrollContainer || this.getScrollParent(this.el.nativeElement);
+
+        //Get container properties
+        let cTop = container.scrollTop;
+        let cBottom = cTop + container.clientHeight;
+
+        //Get element properties
+        let eTop = element.offsetTop;
+        let eBottom = eTop + element.clientHeight;
+
+        //Check if in view    
+        let isTotal = (eTop >= cTop && eBottom <= cBottom);
+        let isPartial = true && (
+            (eTop < cTop && eBottom > cTop) ||
+            (eBottom > cBottom && eTop < cBottom)
+        );
+
+        //Return outcome
+        return (isTotal || isPartial);
     }
-    
-    load(): void {     
-        this.view = this.viewContainer.createEmbeddedView(this.template);
+
+    load(): void {
+        if (!this.pDeferOnlyEvent) {
+            this.view = this.viewContainer.createEmbeddedView(this.template);
+        }
         this.onLoad.emit();
     }
             
