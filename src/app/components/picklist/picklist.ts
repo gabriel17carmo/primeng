@@ -278,18 +278,16 @@ export class PickList implements AfterViewChecked,AfterContentInit {
     
     onFilter(event: KeyboardEvent, data: any[], listType: number) {
         let query = (<HTMLInputElement> event.target).value.trim().toLowerCase();
-        
-        if (this.filterAsyncSource && listType === -1) {
-            this.onFilterSource.emit(query);
-        
-        } else {
-            if (listType === -1)
-                this.filterValueSource = query;
-            else
-                this.filterValueTarget = query;
 
-            this.activateFilter(data, listType);
-        }
+        if (this.filterAsyncSource && listType === -1)
+            this.onFilterSource.emit(query);
+
+        if (listType === -1)
+            this.filterValueSource = query;
+        else
+            this.filterValueTarget = query;
+
+        this.activateFilter(data, listType);
     }
     
     activateFilter(data: any[], listType: number) {
