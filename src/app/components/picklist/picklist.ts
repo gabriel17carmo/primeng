@@ -79,9 +79,10 @@ import {ObjectUtils} from '../utils/objectutils';
     `,
     providers: [DomHandler,ObjectUtils]
 })
-export class PickList implements AfterViewChecked,AfterContentInit {
+export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
 
     @Input() source: any[];
+    oldSourceAsString: string;
 
     @Input() target: any[];
 
@@ -208,7 +209,16 @@ export class PickList implements AfterViewChecked,AfterContentInit {
             }
         });
     }
-        
+
+    ngDoCheck(): void {
+      let currentSourceAsString = JSON.stringify(this.source);
+      if (this.filterValueSource != null && this.filterValueSource.trim() !== '' && this.oldSourceAsString !== currentSourceAsString) {
+        this.activateFilter(this.source, -1);
+      }
+
+      this.oldSourceAsString = currentSourceAsString;
+    }
+
     ngAfterViewChecked() {
         if(this.movedUp||this.movedDown) {
             let listItems = this.domHandler.find(this.reorderedListElement, 'li.ui-state-highlight');
