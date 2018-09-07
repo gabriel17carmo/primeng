@@ -135,6 +135,8 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
 
     @Input() selectedFirst: boolean;
 
+    @Input() asyncFilter = false;
+
     @ViewChild('container') containerViewChild: ElementRef;
 
     @ViewChild('panel') panelViewChild: ElementRef;
@@ -152,6 +154,8 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
     @Output() onPanelShow: EventEmitter<any> = new EventEmitter();
 
     @Output() onPanelHide: EventEmitter<any> = new EventEmitter();
+
+    @Output() onAsyncFilter: EventEmitter<any> = new EventEmitter();
 
     public value: any[];
 
@@ -444,15 +448,20 @@ export class MultiSelect implements OnInit,AfterViewInit,AfterContentInit,AfterV
     }
 
     onFilter(event) {
-        this.filterValue = event.target.value.trim().toLowerCase();
-        this.visibleOptions = [];
-        for(let i = 0; i < this.options.length; i++) {
+        if (this.asyncFilter) {
+          this.onAsyncFilter.emit(event.target.value.trim().toLowerCase());
+
+        } else {
+          this.filterValue = event.target.value.trim().toLowerCase();
+          this.visibleOptions = [];
+          for(let i = 0; i < this.options.length; i++) {
             let option = this.options[i];
             if(option.label.toLowerCase().indexOf(this.filterValue.toLowerCase()) > -1) {
-                this.visibleOptions.push(option);
+              this.visibleOptions.push(option);
             }
+          }
+          this.filtered = true;
         }
-        this.filtered = true;
     }
 
     isItemVisible(option: SelectItem): boolean {
