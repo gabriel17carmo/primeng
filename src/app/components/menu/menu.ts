@@ -1,8 +1,21 @@
-import {NgModule,Component,ElementRef,AfterViewInit,OnDestroy,Input,Output,Renderer2,HostListener,ViewChild,Inject,forwardRef} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {DomHandler} from '../dom/domhandler';
-import {MenuItem} from '../common/menuitem';
-import {RouterModule} from '@angular/router';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  forwardRef,
+  HostListener,
+  Inject,
+  Input,
+  NgModule,
+  OnDestroy,
+  Output,
+  Renderer2,
+  ViewChild
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DomHandler } from '../dom/domhandler';
+import { MenuItem } from '../common/menuitem';
+import { RouterModule } from '@angular/router';
 
 @Component({
     selector: '[pMenuItemContent]',
@@ -23,7 +36,7 @@ import {RouterModule} from '@angular/router';
 export class MenuItemContent {
 
     @Input("pMenuItemContent") item: MenuItem;
-                
+
     constructor(@Inject(forwardRef(() => Menu)) public menu: Menu) {}
 }
 
@@ -60,28 +73,36 @@ export class Menu implements AfterViewInit,OnDestroy {
     @Input() style: any;
 
     @Input() styleClass: string;
-    
+
     @Input() appendTo: any;
 
     @Input() autoZIndex: boolean = true;
-    
+
     @Input() baseZIndex: number = 0;
-    
+
+    @Input() attachScroll: boolean;
+
+    @Input() scrollElement: any;
+
     @ViewChild('container') containerViewChild: ElementRef;
-    
+
     container: HTMLDivElement;
-    
+
     documentClickListener: any;
-    
+
+    scrollListener: any;
+
     preventDocumentDefault: any;
 
     onResizeTarget: any;
-    
+
+    visible: boolean = false;
+
     constructor(public el: ElementRef, public domHandler: DomHandler, public renderer: Renderer2) {}
 
     ngAfterViewInit() {
         this.container = <HTMLDivElement> this.containerViewChild.nativeElement;
-        
+
         if(this.popup) {
             if(this.appendTo) {
                 if(this.appendTo === 'body')
@@ -89,22 +110,42 @@ export class Menu implements AfterViewInit,OnDestroy {
                 else
                     this.domHandler.appendChild(this.container, this.appendTo);
             }
-                
+
             this.documentClickListener = this.renderer.listen('document', 'click', () => {
                 if(!this.preventDocumentDefault) {
                     this.hide();
                 }
                 this.preventDocumentDefault = false;
             });
+
+
+            if (this.attachScroll) {
+              let scrollElement;
+              if (this.scrollElement != null && typeof this.scrollElement === 'string') {
+                scrollElement = document.querySelector(this.scrollElement);
+
+              } else if (this.scrollElement != null && this.scrollElement instanceof Element) {
+                scrollElement = this.scrollElement;
+
+              } else {
+                scrollElement = this.el.nativeElement.offsetParent;
+              }
+
+              this.scrollListener = this.renderer.listen(scrollElement, 'scroll', (event) => {
+                if (this.container && this.onResizeTarget && this.visible) {
+                  this.domHandler.absolutePosition(this.container, this.onResizeTarget);
+                }
+              });
+            }
         }
     }
-    
+
     toggle(event) {
         if(this.container.offsetParent)
             this.hide();
         else
             this.show(event);
-            
+
         this.preventDocumentDefault = true;
     }
 
@@ -113,7 +154,7 @@ export class Menu implements AfterViewInit,OnDestroy {
             this.domHandler.absolutePosition(this.container, this.onResizeTarget);
         }
     }
-    
+
     show(event) {
         let target = event.currentTarget;
         this.onResizeTarget = event.currentTarget;
@@ -122,6 +163,7 @@ export class Menu implements AfterViewInit,OnDestroy {
         this.domHandler.absolutePosition(this.container, target);
         this.domHandler.fadeIn(this.container, 250);
         this.preventDocumentDefault = true;
+        this.visible = true;
     }
 
     moveOnTop() {
@@ -129,45 +171,49 @@ export class Menu implements AfterViewInit,OnDestroy {
             this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
         }
     }
-    
+
     hide() {
         this.container.style.display = 'none';
+        this.visible = false;
     }
-    
+
     itemClick(event, item: MenuItem) {
         if(item.disabled) {
             event.preventDefault();
             return;
         }
-        
+
         if(!item.url) {
             event.preventDefault();
         }
-        
+
         if(item.command) {
             item.command({
                 originalEvent: event,
                 item: item
             });
         }
-        
+
         if(this.popup) {
             this.hide();
         }
     }
-    
+
     ngOnDestroy() {
         if(this.popup) {
             if(this.documentClickListener) {
                 this.documentClickListener();
             }
-            
+            if(this.scrollListener) {
+                this.scrollListener();
+            }
+
             if(this.appendTo) {
                 this.el.nativeElement.appendChild(this.container);
             }
         }
     }
-    
+
     hasSubMenu(): boolean {
         if(this.model) {
             for(var item of this.model) {
