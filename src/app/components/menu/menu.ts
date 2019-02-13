@@ -66,7 +66,9 @@ export class Menu implements AfterViewInit,OnDestroy {
     @Input() autoZIndex: boolean = true;
     
     @Input() baseZIndex: number = 0;
-    
+
+    @Input() usingStopPropagation = false;
+
     @ViewChild('container') containerViewChild: ElementRef;
     
     container: HTMLDivElement;
@@ -98,13 +100,13 @@ export class Menu implements AfterViewInit,OnDestroy {
             });
         }
     }
-    
+
     toggle(event) {
         if(this.container.offsetParent)
             this.hide();
         else
             this.show(event);
-            
+
         this.preventDocumentDefault = true;
     }
 
@@ -113,7 +115,7 @@ export class Menu implements AfterViewInit,OnDestroy {
             this.domHandler.absolutePosition(this.container, this.onResizeTarget);
         }
     }
-    
+
     show(event) {
         let target = event.currentTarget;
         this.onResizeTarget = event.currentTarget;
@@ -121,7 +123,10 @@ export class Menu implements AfterViewInit,OnDestroy {
         this.container.style.display = 'block';
         this.domHandler.absolutePosition(this.container, target);
         this.domHandler.fadeIn(this.container, 250);
-        this.preventDocumentDefault = true;
+
+        if (!this.usingStopPropagation) {
+          this.preventDocumentDefault = true;
+        }
     }
 
     moveOnTop() {
@@ -129,7 +134,7 @@ export class Menu implements AfterViewInit,OnDestroy {
             this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++DomHandler.zindex));
         }
     }
-    
+
     hide() {
         this.container.style.display = 'none';
     }
