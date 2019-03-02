@@ -1,4 +1,4 @@
-import {NgModule,Component,ElementRef,AfterViewInit,DoCheck,OnDestroy,Input,Output,ViewChild,EventEmitter,IterableDiffers,Optional} from '@angular/core';
+import {NgModule,Component,ElementRef,AfterViewInit,DoCheck,OnDestroy,Input,Output,ViewChild,EventEmitter,IterableDiffers,Optional,NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Message} from '../common/message';
 import {DomHandler} from '../dom/domhandler';
@@ -20,7 +20,7 @@ import {Subscription}   from 'rxjs/Subscription';
                                 'fa-close':msg.severity == 'error','fa-check':msg.severity == 'success'}"></span>
                      <div class="ui-growl-message">
                         <span class="ui-growl-title">{{msg.summary}}</span>
-                        <p [innerHTML]="msg.detail"></p>
+                        <p [innerHTML]="msg.detail||''"></p>
                      </div>
                      <div style="clear: both;"></div>
                 </div>
@@ -42,6 +42,8 @@ export class Growl implements AfterViewInit,DoCheck,OnDestroy {
     @Input() autoZIndex: boolean = true;
     
     @Input() baseZIndex: number = 0;
+
+    @Input() key: string;
     
     @Output() onClick: EventEmitter<any> = new EventEmitter();
     
@@ -66,17 +68,20 @@ export class Growl implements AfterViewInit,DoCheck,OnDestroy {
     subscription: Subscription;
     
     closeIconClick: boolean;
-        
-    constructor(public el: ElementRef, public domHandler: DomHandler, public differs: IterableDiffers, @Optional() public messageService: MessageService) {
+
+    constructor(public el: ElementRef, public domHandler: DomHandler, public differs: IterableDiffers, @Optional() public messageService: MessageService, private zone: NgZone) {
         this.differ = differs.find([]).create(null);
         
         if(messageService) {
             this.subscription = messageService.messageObserver.subscribe(messages => {
                 if(messages) {
-                    if(messages instanceof Array)
-                        this.value = this.value ? [...this.value, ...messages] : [...messages];
-                    else
-                        this.value = this.value ? [...this.value, ...[messages]]: [messages];
+                    if(messages instanceof Array) {
+                        let filteredMessages = messages.filter(m => this.key === m.key);
+                        this.value = this.value ? [...this.value, ...filteredMessages] : [...filteredMessages];
+                    }
+                    else if (this.key === messages.key) {
+                        this.value = this.value ? [...this.value, ...[messages]] : [messages];
+                    }
                 }
                 else {
                     this.value = null;
@@ -142,9 +147,13 @@ export class Growl implements AfterViewInit,DoCheck,OnDestroy {
         if(this.timeout) {
             clearTimeout(this.timeout);
         }
-        this.timeout = setTimeout(() => {
-            this.removeAll();
-        }, this.life);
+        this.zone.runOutsideAngular(() => {
+            this.timeout = setTimeout(() => {
+                this.zone.run(() => {
+                    this.removeAll();
+                });
+            }, this.life);
+        });
     }
         
     remove(index: number, msgel: any) {      

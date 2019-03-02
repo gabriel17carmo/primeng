@@ -21,10 +21,10 @@ import {ObjectUtils} from '../utils/objectutils';
                 <div class="ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr" *ngIf="sourceHeader">{{sourceHeader}}</div>
                 <div class="ui-picklist-filter-container ui-widget-content" *ngIf="filterBy && showSourceFilter !== false">
                     <input #sourceFilter type="text" role="textbox" (keyup)="onFilter($event,source,-1)" class="ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all" [disabled]="disabled" [attr.placeholder]="sourceFilterPlaceholder">
-                    <span class="fa fa-search"></span>
+                    <span class="ui-picklist-filter-icon fa fa-search"></span>
                 </div>
                 <ul #sourcelist class="ui-widget-content ui-picklist-list ui-picklist-source ui-corner-bottom" [ngClass]="{'ui-picklist-highlight': listHighlightSource}" [ngStyle]="sourceStyle" (dragover)="onListMouseMove($event,-1)" (dragleave)="onListDragLeave()" (drop)="onListDrop($event, -1)">
-                    <ng-template ngFor let-item [ngForOf]="source" let-i="index" let-l="last">
+                    <ng-template ngFor let-item [ngForOf]="source" [ngForTrackBy]="trackBy" let-i="index" let-l="last">
                         <li class="ui-picklist-droppoint" *ngIf="dragdrop" (dragover)="onDragOver($event, i, -1)" (drop)="onDrop($event, i, -1)" (dragleave)="onDragLeave($event, -1)" 
                         [ngClass]="{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexSource)}" [style.display]="isItemVisible(item, -1) ? 'block' : 'none'"></li>
                         <li [ngClass]="{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsSource), 'ui-state-disabled': disabled}"
@@ -50,10 +50,10 @@ import {ObjectUtils} from '../utils/objectutils';
                 <div class="ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr" *ngIf="targetHeader">{{targetHeader}}</div>
                 <div class="ui-picklist-filter-container ui-widget-content" *ngIf="filterBy && showTargetFilter !== false">
                     <input #targetFilter type="text" role="textbox" (keyup)="onFilter($event,target,1)" class="ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all" [disabled]="disabled" [attr.placeholder]="targetFilterPlaceholder">
-                    <span class="fa fa-search"></span>
+                    <span class="ui-picklist-filter-icon fa fa-search"></span>
                 </div>
                 <ul #targetlist class="ui-widget-content ui-picklist-list ui-picklist-target ui-corner-bottom" [ngClass]="{'ui-picklist-highlight': listHighlightTarget}" [ngStyle]="targetStyle" (dragover)="onListMouseMove($event,1)" (dragleave)="onListDragLeave()" (drop)="onListDrop($event,1)">
-                    <ng-template ngFor let-item [ngForOf]="target" let-i="index" let-l="last">
+                    <ng-template ngFor let-item [ngForOf]="target" [ngForTrackBy]="trackBy" let-i="index" let-l="last">
                         <li class="ui-picklist-droppoint" *ngIf="dragdrop" (dragover)="onDragOver($event, i, 1)" (drop)="onDrop($event, i, 1)" (dragleave)="onDragLeave($event, 1)" 
                         [ngClass]="{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexTarget)}" [style.display]="isItemVisible(item, 1) ? 'block' : 'none'"></li>
                         <li [ngClass]="{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsTarget), 'ui-state-disabled': disabled}"
@@ -93,6 +93,8 @@ export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
     @Input() responsive: boolean;
     
     @Input() filterBy: string;
+
+    @Input() trackBy: Function = (index: number, item: any) => item;
 
     @Input() showSourceFilter: boolean = true;
 
@@ -337,8 +339,14 @@ export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
         this.itemTouched = true;
     }
 
+    private sortByIndexInList(items: any[], list: any) {
+        return items.sort((item1, item2) =>
+            this.findIndexInList(item1, list) - this.findIndexInList(item2, list));
+    }
+
     moveUp(listElement, list, selectedItems, callback) {
         if(selectedItems && selectedItems.length) {
+            selectedItems = this.sortByIndexInList(selectedItems, list);
             for(let i = 0; i < selectedItems.length; i++) {
                 let selectedItem = selectedItems[i];
                 let selectedItemIndex: number = this.findIndexInList(selectedItem, list);
@@ -362,6 +370,7 @@ export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
 
     moveTop(listElement, list, selectedItems, callback) {
         if(selectedItems && selectedItems.length) {
+            selectedItems = this.sortByIndexInList(selectedItems, list);
             for(let i = 0; i < selectedItems.length; i++) {
                 let selectedItem = selectedItems[i];
                 let selectedItemIndex: number = this.findIndexInList(selectedItem, list);
@@ -382,6 +391,7 @@ export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
 
     moveDown(listElement, list, selectedItems, callback) {
         if(selectedItems && selectedItems.length) {
+            selectedItems = this.sortByIndexInList(selectedItems, list);
             for(let i = selectedItems.length - 1; i >= 0; i--) {
                 let selectedItem = selectedItems[i];
                 let selectedItemIndex: number = this.findIndexInList(selectedItem, list);
@@ -405,6 +415,7 @@ export class PickList implements AfterViewChecked,AfterContentInit,DoCheck {
 
     moveBottom(listElement, list, selectedItems, callback) {
         if(selectedItems && selectedItems.length) {
+            selectedItems = this.sortByIndexInList(selectedItems, list);
             for(let i = selectedItems.length - 1; i >= 0; i--) {
                 let selectedItem = selectedItems[i];
                 let selectedItemIndex: number = this.findIndexInList(selectedItem, list);

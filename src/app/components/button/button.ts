@@ -24,6 +24,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         this.domHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
         if(this.icon) {
             let iconElement = document.createElement("span");
+            iconElement.setAttribute("aria-hidden", "true");
             let iconPosClass = (this.iconPos == 'right') ? 'ui-button-icon-right': 'ui-button-icon-left';
             iconElement.className = iconPosClass  + ' ui-clickable fa fa-fw ' + this.icon;
             this.el.nativeElement.appendChild(iconElement);
@@ -119,6 +120,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
                         'ui-button-text-empty': (!icon && !label),
                         'ui-state-disabled': disabled}"
                         (click)="onClick.emit($event)" (focus)="onFocus.emit($event)" (blur)="onBlur.emit($event)">
+            <ng-content></ng-content>
             <span [ngClass]="{'ui-clickable': true,
                         'ui-button-icon-left': (iconPos === 'left'), 
                         'ui-button-icon-right': (iconPos === 'right')}"

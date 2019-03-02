@@ -31,7 +31,7 @@ export interface LocaleSettings {
             <ng-template [ngIf]="!inline">
                 <input #inputfield type="text" [attr.id]="inputId" [attr.name]="name" [attr.required]="required" [value]="inputFieldValue" (focus)="onInputFocus($event)" (keydown)="onInputKeydown($event)" (click)="onInputClick($event)" (blur)="onInputBlur($event)"
                     [readonly]="readonlyInput" (input)="onUserInput($event)" [ngStyle]="inputStyle" [class]="inputStyleClass" [placeholder]="placeholder||''" [disabled]="disabled" [attr.tabindex]="tabindex"
-                    [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all'"
+                    [ngClass]="'ui-inputtext ui-widget ui-state-default ui-corner-all'" autocomplete="off"
                     ><button type="button" [icon]="icon" pButton *ngIf="showIcon" (click)="onButtonClick($event,inputfield)" class="ui-datepicker-trigger ui-calendar-button"
                     [ngClass]="{'ui-state-disabled':disabled}" [disabled]="disabled" tabindex="-1"></button>
             </ng-template>
@@ -71,7 +71,7 @@ export interface LocaleSettings {
                                 'ui-datepicker-current-day':isSelected(date),'ui-datepicker-today':date.today}">
                                 <a class="ui-state-default" href="#" *ngIf="date.otherMonth ? showOtherMonths : true"
                                     [ngClass]="{'ui-state-active':isSelected(date), 'ui-state-highlight':date.today, 'ui-state-disabled':!date.selectable}"
-                                    (click)="onDateSelect($event,date)">
+                                    (click)="onDateSelect($event,date)" draggable="false">
                                     <ng-container *ngIf="!dateTemplate">{{date.day}}</ng-container>
                                     <ng-container *ngTemplateOutlet="dateTemplate; context: {$implicit: date}"></ng-container>
                                 </a>
@@ -248,6 +248,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     @Input() panelStyleClass: string;
   
     @Input() keepInvalid: boolean = false;
+
+    @Input() hideOnDateTimeSelect: boolean = false;
     
     @Output() onFocus: EventEmitter<any> = new EventEmitter();
     
@@ -264,6 +266,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     @Output() onClearClick: EventEmitter<any> = new EventEmitter();
     
     @Output() onMonthChange: EventEmitter<any> = new EventEmitter();
+    
+    @Output() onYearChange: EventEmitter<any> = new EventEmitter();
     
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
     
@@ -352,7 +356,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     set minDate(date: Date) {
         this._minDate = date;
-        if(this.currentMonth != null && this.currentYear) {
+
+        if(this.currentMonth != undefined && this.currentMonth != null && this.currentYear) {
             this.createMonth(this.currentMonth, this.currentYear);
         }
     }
@@ -363,7 +368,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     set maxDate(date: Date) {
         this._maxDate = date;
-        if(this.currentMonth != null && this.currentYear) {
+      
+        if(this.currentMonth != undefined && this.currentMonth != null  && this.currentYear) {
             this.createMonth(this.currentMonth, this.currentYear);
         }
     }
@@ -374,7 +380,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     set disabledDates(disabledDates: Date[]) {
         this._disabledDates = disabledDates;
-        if(this.currentMonth != null && this.currentYear) {
+        if(this.currentMonth != undefined && this.currentMonth != null  && this.currentYear) {
+
             this.createMonth(this.currentMonth, this.currentYear);
         }
     }
@@ -385,7 +392,8 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     set disabledDays(disabledDays: number[]) {
         this._disabledDays = disabledDays;
-        if(this.currentMonth != null && this.currentYear) {
+
+        if(this.currentMonth != undefined && this.currentMonth != null  && this.currentYear) {
             this.createMonth(this.currentMonth, this.currentYear);
         }
     }
@@ -541,7 +549,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
                     this.currentHour = date.getUTCHours() == 0 ? 12 : date.getUTCHours() % 12;
                 else
                     this.currentHour = date.getUTCHours();
-            } 
+            }
             else {
                 this.currentMinute = date.getMinutes();
                 this.currentSecond = date.getSeconds();
@@ -633,7 +641,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
             }
         }
         
-        if(!this.showTime && this.isSingleSelection()) {
+        if(this.isSingleSelection() && (!this.showTime || this.hideOnDateTimeSelect)) {
             this.overlayVisible = false;
         }
 
@@ -731,10 +739,16 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         
         if(this.minDate && this.minDate > date) {
             date = this.minDate;
+            this.currentHour = date.getHours();
+            this.currentMinute = date.getMinutes();
+            this.currentSecond = date.getSeconds();
         }
         
         if(this.maxDate && this.maxDate < date) {
             date = this.maxDate;
+            this.currentHour = date.getHours();
+            this.currentMinute = date.getMinutes();
+            this.currentSecond = date.getSeconds();
         }
         
         if(this.isSingleSelection()) {
@@ -769,10 +783,21 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     updateModel(value) {
         this.value = value;
         
-        if(this.dataType == 'date')
+        if(this.dataType == 'date') {
             this.onModelChange(this.value);
-        else if(this.dataType == 'string')
-            this.onModelChange(this.formatDateTime(this.value));
+        }
+        else if(this.dataType == 'string') {
+            if(this.isSingleSelection()) {
+                this.onModelChange(this.formatDateTime(this.value));
+            }
+            else {
+                let stringArrValue = null;
+                if(this.value) {
+                    stringArrValue = this.value.map(date => this.formatDateTime(date));
+                }
+                this.onModelChange(stringArrValue);
+            }
+        }
     }
     
     getFirstDayOfMonthIndex(month: number, year: number) {
@@ -1002,11 +1027,13 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
     
     onMonthDropdownChange(m: string) {
         this.currentMonth = parseInt(m);
+        this.onMonthChange.emit({ month: this.currentMonth + 1, year: this.currentYear });
         this.createMonth(this.currentMonth, this.currentYear);
     }
     
     onYearDropdownChange(y: string) {
         this.currentYear = parseInt(y);
+        this.onYearChange.emit({ month: this.currentMonth + 1, year: this.currentYear });
         this.createMonth(this.currentMonth, this.currentYear);
     }
     
@@ -1190,7 +1217,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
             else {
                 value.setUTCHours(this.currentHour);
             }
-        } 
+        }
         else {
             if (this.hourFormat == '12') {
                 if (this.currentHour === 12)
@@ -1323,7 +1350,7 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
         this.createMonth(val.getMonth(), val.getFullYear());
         
         if(this.showTime||this.timeOnly) {
-            let hours = (this.utc) ? val.getUTCHours : val.getHours();
+            let hours = (this.utc) ? val.getUTCHours() : val.getHours();
             
             if(this.hourFormat == '12') {
                 this.pm = hours > 11;
@@ -1492,7 +1519,11 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
             hours-=12;
         }
         
-        output += (hours < 10) ? '0' + hours : hours;
+        if(this.hourFormat == '12') {
+            output += hours === 0 ? 12 : (hours < 10) ? '0' + hours : hours;
+        } else {
+            output += (hours < 10) ? '0' + hours : hours;
+        }
         output += ':';
         output += (minutes < 10) ? '0' + minutes : minutes;
         
@@ -1685,13 +1716,16 @@ export class Calendar implements AfterViewInit,AfterViewChecked,OnInit,OnDestroy
             } while (true);
         }
 
-        if (this.utc)
+        if (this.utc) {
             date = new Date(Date.UTC(year, month - 1, day));
-        else
+            if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) {
+                throw "Invalid date"; // E.g. 31/02/00
+            }
+        } else {
             date = this.daylightSavingAdjust(new Date(year, month - 1, day));
-
-        if(date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
-            throw "Invalid date"; // E.g. 31/02/00
+            if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
+                throw "Invalid date"; // E.g. 31/02/00
+            }
         }
         return date;
     }
