@@ -178,30 +178,30 @@ export class Paginator implements OnInit {
         return Math.floor(this.first / this.rows);
     }
 
-    changePageToFirst(event) {
+    changePageToFirst(event?) {
       if(!this.isFirstPage()){
           this.changePage(0);
       }
 
-      event.preventDefault();
+        event && event.preventDefault();
     }
 
-    changePageToPrev(event) {
+    changePageToPrev(event?) {
         this.changePage(this.getPage() - 1);
-        event.preventDefault();
+        event && event.preventDefault();
     }
 
-    changePageToNext(event) {
+    changePageToNext(event?) {
         this.changePage(this.getPage()  + 1);
-        event.preventDefault();
+        event && event.preventDefault();
     }
 
-    changePageToLast(event) {
+    changePageToLast(event?) {
       if(!this.isLastPage()){
           this.changePage(this.getPageCount() - 1);
       }
 
-      event.preventDefault();
+      event && event.preventDefault();
     }
 
     onPageLinkClick(event, page) {
